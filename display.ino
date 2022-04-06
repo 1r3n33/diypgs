@@ -5,9 +5,15 @@
 
 SPISettings spi_settings(16 * 1000000, MSBFIRST, SPI_MODE0);
 
-uint8_t sphere_gfx[8] = {0x3C, 0x7E, 0xFF, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
-uint8_t cube_gfx[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
-uint8_t diamond_gfx[8] = {0x18, 0x3C, 0x7E, 0xFF, 0xFF, 0x7E, 0x3C, 0x18};
+uint8_t sphere_gfx[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
+
+uint8_t paddle_left_top_gfx[8] = {0xF0, 0x0C, 0xF2, 0xFA, 0xFD, 0xFD, 0xFD, 0xFF};
+uint8_t paddle_left_body_gfx[8] = {0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+uint8_t paddle_left_bottom_gfx[8] = {0x0F, 0x30, 0x4F, 0x5F, 0xBF, 0xBF, 0xBF, 0xFF};
+
+uint8_t paddle_right_top_gfx[8] = {0xFF, 0xFD, 0xFD, 0xFD, 0xFA, 0xF2, 0x0C, 0xF0};
+uint8_t paddle_right_body_gfx[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF};
+uint8_t paddle_right_bottom_gfx[8] = {0xFF, 0xBF, 0xBF, 0xBF, 0x5F, 0x4F, 0x30, 0x0F};
 
 void setup()
 {
@@ -73,33 +79,17 @@ void draw_8x8(uint8_t x, uint8_t y, uint8_t *gfx)
 
 void loop()
 {
-  // LCD all segments on
-  delay(1000);
-  digitalWrite(SS, LOW); // Activate
-  digitalWrite(DC, LOW); // DC pin is low for commands
-  SPI.beginTransaction(spi_settings);
-  SPI.transfer(0x20); // LCD basic commands
-  SPI.transfer(0x09); // On
-  SPI.endTransaction();
-  digitalWrite(SS, HIGH); // Deactivate
-
-  // LCD all segments off
-  delay(1000);
-  digitalWrite(SS, LOW); // Activate
-  digitalWrite(DC, LOW); // DC pin is low for commands
-  SPI.beginTransaction(spi_settings);
-  SPI.transfer(0x20); // LCD basic commands
-  SPI.transfer(0x08); // Off
-  SPI.endTransaction();
-  digitalWrite(SS, HIGH); // Deactivate
-
   // Draw sprites
-  delay(1000);
   digitalWrite(SS, LOW); // Activate
 
-  draw_8x8(0, 0, sphere_gfx);
-  draw_8x8(16, 2, cube_gfx);
-  draw_8x8(32, 4, diamond_gfx);
+  draw_8x8(32, 1, sphere_gfx);
+
+  draw_8x8(0, 0, paddle_left_top_gfx);
+  draw_8x8(0, 1, paddle_left_body_gfx);
+  draw_8x8(0, 2, paddle_left_bottom_gfx);
+
+  draw_8x8(76, 3, paddle_right_top_gfx);
+  draw_8x8(76, 4, paddle_right_bottom_gfx);
 
   digitalWrite(SS, HIGH); // Deactivate
 }
