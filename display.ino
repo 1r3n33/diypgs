@@ -23,25 +23,33 @@ uint8_t gfx_bonus_top_right[8] = {0xC0, 0xA0, 0x90, 0x48, 0x28, 0x10, 0x00, 0x00
 uint8_t gfx_bonus_bottom_left[8] = {0x00, 0x7E, 0xE7, 0xE7, 0xE7, 0xE7, 0xFF, 0x80};
 uint8_t gfx_bonus_bottom_right[8] = {0x80, 0xFF, 0xE7, 0xE7, 0xE7, 0xE7, 0x7E, 0x00};
 
-void clear()
+#define BUFFER_SIZE (6 * 84)
+
+uint8_t buffer[BUFFER_SIZE];
+
+void clear_buffer()
 {
-  // Clear display data ram
+  for (int16_t i = 0; i < BUFFER_SIZE; i++)
+  {
+    buffer[i] = 0;
+  }
+}
+
+void display_buffer()
+{
   digitalWrite(SS, LOW); // Activate
 
+  // Set pointer 0,0
   digitalWrite(DC, LOW); // DC pin is low for commands
   SPI.beginTransaction(spi_settings);
-  SPI.transfer(0x20); // LCD basic commands
-  SPI.transfer(0x0C); // normal display mode
-  SPI.transfer(0x40); // y 0
-  SPI.transfer(0x80); // x 0
+  SPI.transfer(0x40); // y
+  SPI.transfer(0x80); // x
   SPI.endTransaction();
 
+  // Draw buffer
   digitalWrite(DC, HIGH); // DC pin is high for data
   SPI.beginTransaction(spi_settings);
-  for (int i = 0; i < 6 * 84; i++)
-  {
-    SPI.transfer(0x00);
-  }
+  SPI.transfer(buffer, BUFFER_SIZE);
   SPI.endTransaction();
 
   digitalWrite(SS, HIGH); // Deactivate
@@ -49,22 +57,28 @@ void clear()
 
 void draw_8x8(uint8_t x, uint8_t y, uint8_t *gfx)
 {
-  digitalWrite(DC, LOW); // DC pin is low for commands
-  SPI.beginTransaction(spi_settings);
-  SPI.transfer(0x20);     // LCD basic commands
-  SPI.transfer(0x0C);     // normal display mode
-  SPI.transfer(0x40 | y); // y
-  SPI.transfer(0x80 | x); // x
-  SPI.endTransaction();
-
-  digitalWrite(DC, HIGH); // DC pin is high for data
-  SPI.beginTransaction(spi_settings);
-
-  uint8_t buf[8];
-  memcpy(buf, gfx, 8);
-  SPI.transfer(buf, 8);
-
-  SPI.endTransaction();
+  uint8_t mod8 = y % 8;
+  if (mod8 == 0)
+  {
+    int16_t y0 = (y / 8) * 84;
+    for (int8_t i = 0; i < 8; i++)
+    {
+      buffer[y0 + x + i] |= gfx[i];
+    }
+  }
+  else
+  {
+    int16_t y0 = (y / 8) * 84;
+    for (int8_t i = 0; i < 8; i++)
+    {
+      buffer[y0 + x + i] |= gfx[i] << mod8;
+    }
+    int16_t y1 = y0 + 84;
+    for (int8_t i = 0; i < 8; i++)
+    {
+      buffer[y1 + x + i] |= gfx[i] >> (8 - mod8);
+    }
+  }
 }
 
 void setup()
@@ -78,41 +92,44 @@ void setup()
   digitalWrite(RST, HIGH);
 
   digitalWrite(SS, LOW); // Activate
+
   digitalWrite(DC, LOW); // DC pin is low for commands
   SPI.beginTransaction(spi_settings);
   SPI.transfer(0x21); // LCD extended commands
   SPI.transfer(0xB8); // set LCD Vop (contrast)
   SPI.transfer(0x04); // set temp coefficient
   SPI.transfer(0x14); // LCD bias mode 1:40
+  SPI.transfer(0x20); // LCD basic commands
+  SPI.transfer(0x0C); // normal display mode
   SPI.endTransaction();
+
   digitalWrite(SS, HIGH); // Deactivate
+
+  clear_buffer();
+  display_buffer();
 }
 
 void loop()
 {
-  clear();
+  clear_buffer();
 
-  // Draw sprites
-  digitalWrite(SS, LOW); // Activate
+  draw_8x8(32, 8, gfx_ball);
 
-  draw_8x8(32, 1, gfx_ball);
+  draw_8x8(0, 2, gfx_paddle_left_top);
+  draw_8x8(0, 10, gfx_paddle_left_body);
+  draw_8x8(0, 18, gfx_paddle_left_bottom);
 
-  draw_8x8(0, 0, gfx_paddle_left_top);
-  draw_8x8(0, 1, gfx_paddle_left_body);
-  draw_8x8(0, 2, gfx_paddle_left_bottom);
+  draw_8x8(0, 36, gfx_paddle_left_mini);
 
-  draw_8x8(0, 4, gfx_paddle_left_mini);
+  draw_8x8(76, 24, gfx_paddle_right_top);
+  draw_8x8(76, 32, gfx_paddle_right_bottom);
 
-  draw_8x8(76, 3, gfx_paddle_right_top);
-  draw_8x8(76, 4, gfx_paddle_right_bottom);
+  draw_8x8(40, 24, gfx_bonus_top_left);
+  draw_8x8(48, 24, gfx_bonus_top_right);
+  draw_8x8(40, 32, gfx_bonus_bottom_left);
+  draw_8x8(48, 32, gfx_bonus_bottom_right);
 
-  draw_8x8(40, 3, gfx_bonus_top_left);
-  draw_8x8(48, 3, gfx_bonus_top_right);
-  draw_8x8(40, 4, gfx_bonus_bottom_left);
-  draw_8x8(48, 4, gfx_bonus_bottom_right);
+  display_buffer();
 
-  digitalWrite(SS, HIGH); // Deactivate
-
-  while (true)
-    ;
+  delay(100);
 }
