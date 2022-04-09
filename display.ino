@@ -38,7 +38,7 @@ void clear()
 
   digitalWrite(DC, HIGH); // DC pin is high for data
   SPI.beginTransaction(spi_settings);
-  for (int i = 0; i < 48 * 84; i++)
+  for (int i = 0; i < 6 * 84; i++)
   {
     SPI.transfer(0x00);
   }
