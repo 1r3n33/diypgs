@@ -38,46 +38,30 @@ void clear_buffer()
 void display_buffer()
 {
   digitalWrite(SS, LOW); // Activate
-
-  // Set pointer 0,0
-  digitalWrite(DC, LOW); // DC pin is low for commands
   SPI.beginTransaction(spi_settings);
-  SPI.transfer(0x40); // y
-  SPI.transfer(0x80); // x
-  SPI.endTransaction();
 
   // Draw buffer
   digitalWrite(DC, HIGH); // DC pin is high for data
-  SPI.beginTransaction(spi_settings);
   SPI.transfer(buffer, BUFFER_SIZE);
-  SPI.endTransaction();
 
+  SPI.endTransaction();
   digitalWrite(SS, HIGH); // Deactivate
 }
 
 void draw_8x8(uint8_t x, uint8_t y, uint8_t *gfx)
 {
-  uint8_t mod8 = y % 8;
-  if (mod8 == 0)
+  uint8_t mod0 = y % 8;
+  int16_t y0 = (y / 8) * 84;
+  for (int8_t i = 0; i < 8; i++)
   {
-    int16_t y0 = (y / 8) * 84;
-    for (int8_t i = 0; i < 8; i++)
-    {
-      buffer[y0 + x + i] |= gfx[i];
-    }
+    buffer[y0 + x + i] |= gfx[i] << mod0;
   }
-  else
+
+  uint8_t mod1 = 8 - mod0;
+  int16_t y1 = y0 + 84;
+  for (int8_t i = 0; i < 8; i++)
   {
-    int16_t y0 = (y / 8) * 84;
-    for (int8_t i = 0; i < 8; i++)
-    {
-      buffer[y0 + x + i] |= gfx[i] << mod8;
-    }
-    int16_t y1 = y0 + 84;
-    for (int8_t i = 0; i < 8; i++)
-    {
-      buffer[y1 + x + i] |= gfx[i] >> (8 - mod8);
-    }
+    buffer[y1 + x + i] |= gfx[i] >> mod1;
   }
 }
 
@@ -101,6 +85,8 @@ void setup()
   SPI.transfer(0x14); // LCD bias mode 1:40
   SPI.transfer(0x20); // LCD basic commands
   SPI.transfer(0x0C); // normal display mode
+  SPI.transfer(0x40); // set y to 0
+  SPI.transfer(0x80); // set x to 0
   SPI.endTransaction();
 
   digitalWrite(SS, HIGH); // Deactivate
@@ -131,5 +117,5 @@ void loop()
 
   display_buffer();
 
-  delay(100);
+  delay(50);
 }
