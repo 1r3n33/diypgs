@@ -23,15 +23,53 @@ uint8_t gfx_bonus_top_right[8] = {0xC0, 0xA0, 0x90, 0x48, 0x28, 0x10, 0x00, 0x00
 uint8_t gfx_bonus_bottom_left[8] = {0x00, 0x7E, 0xE7, 0xE7, 0xE7, 0xE7, 0xFF, 0x80};
 uint8_t gfx_bonus_bottom_right[8] = {0x80, 0xFF, 0xE7, 0xE7, 0xE7, 0xE7, 0x7E, 0x00};
 
-#define BUFFER_SIZE (6 * 84)
+#define SCREEN_WIDTH 84
 
-uint8_t buffer[BUFFER_SIZE];
+#define MAX_SPRITE_COUNT 16
+
+struct sprite_t
+{
+  uint8_t flags;
+  uint8_t x;
+  uint8_t y;
+  uint8_t *data;
+} sprites[MAX_SPRITE_COUNT] = {0};
+
+#define BUFFER_SIZE (6 * SCREEN_WIDTH)
+
+uint8_t buffer[BUFFER_SIZE] = {0};
 
 void clear_buffer()
 {
   for (int16_t i = 0; i < BUFFER_SIZE; i++)
   {
     buffer[i] = 0;
+  }
+}
+
+void draw_8x8(uint8_t x, uint8_t y, uint8_t *data)
+{
+  uint8_t mod0 = y % 8;
+  int16_t y0 = (y / 8) * SCREEN_WIDTH;
+  for (int8_t i = 0; i < 8; i++)
+  {
+    buffer[y0 + x + i] |= data[i] << mod0;
+  }
+
+  uint8_t mod1 = 8 - mod0;
+  int16_t y1 = y0 + SCREEN_WIDTH;
+  for (int8_t i = 0; i < 8; i++)
+  {
+    buffer[y1 + x + i] |= data[i] >> mod1;
+  }
+}
+
+void draw_sprite(uint8_t i)
+{
+  sprite_t *sprite = sprites + i;
+  if (sprite->flags & 1)
+  {
+    draw_8x8(sprite->x, sprite->y, sprite->data);
   }
 }
 
@@ -46,23 +84,6 @@ void display_buffer()
 
   SPI.endTransaction();
   digitalWrite(SS, HIGH); // Deactivate
-}
-
-void draw_8x8(uint8_t x, uint8_t y, uint8_t *gfx)
-{
-  uint8_t mod0 = y % 8;
-  int16_t y0 = (y / 8) * 84;
-  for (int8_t i = 0; i < 8; i++)
-  {
-    buffer[y0 + x + i] |= gfx[i] << mod0;
-  }
-
-  uint8_t mod1 = 8 - mod0;
-  int16_t y1 = y0 + 84;
-  for (int8_t i = 0; i < 8; i++)
-  {
-    buffer[y1 + x + i] |= gfx[i] >> mod1;
-  }
 }
 
 void setup()
@@ -93,27 +114,33 @@ void setup()
 
   clear_buffer();
   display_buffer();
+
+  // Init sprites
+  sprites[0] = {0x01, 32, 8, gfx_ball};
+
+  sprites[1] = {0x01, 0, 2, gfx_paddle_left_top};
+  sprites[2] = {0x01, 0, 10, gfx_paddle_left_body};
+  sprites[3] = {0x01, 0, 18, gfx_paddle_left_bottom};
+
+  sprites[4] = {0x01, 0, 36, gfx_paddle_left_mini};
+
+  sprites[5] = {0x01, 76, 24, gfx_paddle_right_top};
+  sprites[6] = {0x01, 76, 32, gfx_paddle_right_bottom};
+
+  sprites[7] = {0x01, 40, 24, gfx_bonus_top_left};
+  sprites[8] = {0x01, 48, 24, gfx_bonus_top_right};
+  sprites[9] = {0x01, 40, 32, gfx_bonus_bottom_left};
+  sprites[10] = {0x01, 48, 32, gfx_bonus_bottom_right};
 }
 
 void loop()
 {
   clear_buffer();
 
-  draw_8x8(32, 8, gfx_ball);
-
-  draw_8x8(0, 2, gfx_paddle_left_top);
-  draw_8x8(0, 10, gfx_paddle_left_body);
-  draw_8x8(0, 18, gfx_paddle_left_bottom);
-
-  draw_8x8(0, 36, gfx_paddle_left_mini);
-
-  draw_8x8(76, 24, gfx_paddle_right_top);
-  draw_8x8(76, 32, gfx_paddle_right_bottom);
-
-  draw_8x8(40, 24, gfx_bonus_top_left);
-  draw_8x8(48, 24, gfx_bonus_top_right);
-  draw_8x8(40, 32, gfx_bonus_bottom_left);
-  draw_8x8(48, 32, gfx_bonus_bottom_right);
+  for (uint8_t i = 0; i < MAX_SPRITE_COUNT; i++)
+  {
+    draw_sprite(i);
+  }
 
   display_buffer();
 
