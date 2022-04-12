@@ -7,27 +7,25 @@
 
 SPISettings spi_settings(16 * 1000000, MSBFIRST, SPI_MODE0);
 
-#define SCREEN_WIDTH 84
-
 #define MAX_SPRITE_COUNT 16
 
 PCD8544::sprite_t sprites[MAX_SPRITE_COUNT] = {0};
 
-#define BUFFER_SIZE (6 * SCREEN_WIDTH)
+#define BUFFER_SIZE (6 * PCD8544::SCREEN_WIDTH)
 
 uint8_t buffer[BUFFER_SIZE] = {0};
 
 void draw_8x8(uint8_t x, uint8_t y, uint8_t *data)
 {
     uint8_t mod0 = y % 8;
-    int16_t y0 = (y / 8) * SCREEN_WIDTH;
+    int16_t y0 = (y / 8) * PCD8544::SCREEN_WIDTH;
     for (int8_t i = 0; i < 8; i++)
     {
         buffer[y0 + x + i] |= data[i] << mod0;
     }
 
     uint8_t mod1 = 8 - mod0;
-    int16_t y1 = y0 + SCREEN_WIDTH;
+    int16_t y1 = y0 + PCD8544::SCREEN_WIDTH;
     for (int8_t i = 0; i < 8; i++)
     {
         buffer[y1 + x + i] |= data[i] >> mod1;

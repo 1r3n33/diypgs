@@ -6,6 +6,9 @@
 class PCD8544
 {
 public:
+    static const uint8_t SCREEN_WIDTH = 84;
+    static const uint8_t SCREEN_HEIGHT = 48;
+
     struct sprite_t
     {
         uint8_t flags;

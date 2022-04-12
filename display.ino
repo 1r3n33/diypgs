@@ -1,7 +1,5 @@
 #include "pcd8544.h"
 
-uint8_t gfx_ball[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
-
 uint8_t gfx_paddle_left_top[8] = {0xF0, 0x0C, 0xF2, 0xFA, 0xFD, 0xFD, 0xFD, 0xFF};
 uint8_t gfx_paddle_left_body[8] = {0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 uint8_t gfx_paddle_left_bottom[8] = {0x0F, 0x30, 0x4F, 0x5F, 0xBF, 0xBF, 0xBF, 0xFF};
@@ -10,38 +8,73 @@ uint8_t gfx_paddle_right_top[8] = {0xFF, 0xFD, 0xFD, 0xFD, 0xFA, 0xF2, 0x0C, 0xF
 uint8_t gfx_paddle_right_body[8] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0xFF};
 uint8_t gfx_paddle_right_bottom[8] = {0xFF, 0xBF, 0xBF, 0xBF, 0x5F, 0x4F, 0x30, 0x0F};
 
-uint8_t gfx_paddle_left_mini[8] = {0x3C, 0x42, 0x5A, 0x5A, 0x99, 0xBD, 0xBD, 0xBD};
+class Paddle
+{
+private:
+  int8_t x;
+  int8_t y;
+  uint8_t sprite_ids[2];
+  PCD8544::sprite_t sprites[2];
 
-uint8_t gfx_bonus_top_left[8] = {0x00, 0x00, 0x10, 0x28, 0x48, 0x90, 0xA0, 0xC0};
-uint8_t gfx_bonus_top_right[8] = {0xC0, 0xA0, 0x90, 0x48, 0x28, 0x10, 0x00, 0x00};
+public:
+  Paddle(uint8_t left)
+  {
+    x = left ? 0 : (PCD8544::SCREEN_WIDTH - 8);
+    y = (PCD8544::SCREEN_HEIGHT - 16) / 2;
 
-uint8_t gfx_bonus_bottom_left[8] = {0x00, 0x7E, 0xE7, 0xE7, 0xE7, 0xE7, 0xFF, 0x80};
-uint8_t gfx_bonus_bottom_right[8] = {0x80, 0xFF, 0xE7, 0xE7, 0xE7, 0xE7, 0x7E, 0x00};
+    sprite_ids[0] = left ? 2 : 4;
+    sprite_ids[1] = left ? 3 : 5;
+
+    sprites[0] = {0x01, uint8_t(x), uint8_t(y), left ? gfx_paddle_left_top : gfx_paddle_right_top};
+    sprites[1] = {0x01, uint8_t(x), uint8_t(y + 8), left ? gfx_paddle_left_bottom : gfx_paddle_right_bottom};
+  }
+
+  void move(int8_t d)
+  {
+    y += d;
+    if (y < 0)
+    {
+      y = 0;
+    }
+    if (y > PCD8544::SCREEN_HEIGHT - 16)
+    {
+      y = PCD8544::SCREEN_HEIGHT - 16;
+    }
+
+    sprites[0].y = y;
+    sprites[1].y = y + 8;
+
+    PCD8544::set_sprite(sprite_ids[0], sprites[0]);
+    PCD8544::set_sprite(sprite_ids[1], sprites[1]);
+  }
+};
+
+Paddle left(0x1);
+Paddle right(0x0);
 
 void setup()
 {
   PCD8544::setup();
-
-  // Init sprites
-  PCD8544::set_sprite(0, {0x01, 32, 8, gfx_ball});
-
-  PCD8544::set_sprite(1, {0x01, 0, 2, gfx_paddle_left_top});
-  PCD8544::set_sprite(2, {0x01, 0, 10, gfx_paddle_left_body});
-  PCD8544::set_sprite(3, {0x01, 0, 18, gfx_paddle_left_bottom});
-
-  PCD8544::set_sprite(4, {0x01, 1, 36, gfx_paddle_left_mini});
-
-  PCD8544::set_sprite(5, {0x01, 74, 26, gfx_paddle_right_top});
-  PCD8544::set_sprite(6, {0x01, 74, 34, gfx_paddle_right_bottom});
-
-  PCD8544::set_sprite(7, {0x01, 40, 24, gfx_bonus_top_left});
-  PCD8544::set_sprite(8, {0x01, 48, 24, gfx_bonus_top_right});
-  PCD8544::set_sprite(9, {0x01, 40, 32, gfx_bonus_bottom_left});
-  PCD8544::set_sprite(10, {0x01, 48, 32, gfx_bonus_bottom_right});
+  left.move(0);
+  right.move(0);
 }
+
+uint8_t tick = 10;
+int8_t deltas[2] = {1, -1};
 
 void loop()
 {
+  left.move(deltas[0]);
+  right.move(deltas[1]);
+
+  tick++;
+  if (tick > 20)
+  {
+    tick = 0;
+    deltas[0] = -deltas[0];
+    deltas[1] = -deltas[1];
+  }
+
   PCD8544::render();
-  delay(50);
+  delay(100);
 }
