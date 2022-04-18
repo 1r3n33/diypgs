@@ -8,9 +8,11 @@ int16_t speed_y[4] = {158, 121, 65, 0};
 
 class Ball
 {
-private:
+public:
   int16_t x;
   int16_t y;
+
+private:
   PCD8544::sprite_t sprite;
 
 public:
@@ -127,33 +129,55 @@ public:
     PCD8544::set_sprite(sprite_ids[0], sprites[0]);
     PCD8544::set_sprite(sprite_ids[1], sprites[1]);
   }
+
+  void target(uint8_t target)
+  {
+    uint8_t paddle_center = y + 8;
+    if (paddle_center < target)
+    {
+      move(+1);
+    }
+    else if (paddle_center > target)
+    {
+      move(-1);
+    }
+  }
 };
 
 Ball ball;
 Paddle left(0x1);
 Paddle right(0x0);
 
+#define Y_BUFFER_SIZE 16
+uint8_t y_buffer[Y_BUFFER_SIZE] = {0};
+uint8_t y_index = 0;
+
 void setup()
 {
   PCD8544::setup();
   ball.reset();
-}
+  left.move(0);
+  right.move(0);
 
-uint8_t tick = 10;
-int8_t deltas[2] = {1, -1};
+  for (uint8_t i = 0; i < Y_BUFFER_SIZE; i++)
+  {
+    y_buffer[i] = (ball.y >> 8) + 4;
+  }
+}
 
 void loop()
 {
-  uint8_t collision = ball.update(2);
+  uint8_t collision = ball.update(0);
+  y_buffer[y_index] = (ball.y >> 8) + 4;
 
-  tick++;
-  if (tick > 20)
-  {
-    tick = 0;
-    deltas[0] = -deltas[0];
-    deltas[1] = -deltas[1];
-  }
+  uint8_t yl = (y_index + Y_BUFFER_SIZE - 4) % Y_BUFFER_SIZE;  // 4 frames of lag
+  uint8_t yr = (y_index + Y_BUFFER_SIZE - 12) % Y_BUFFER_SIZE; // 12 frames of lag
+
+  left.target(y_buffer[yl]);
+  right.target(y_buffer[yr]);
+
+  y_index = (y_index + 1) % Y_BUFFER_SIZE;
 
   PCD8544::render();
-  delay(collision ? 16 : 16);
+  delay(30);
 }
