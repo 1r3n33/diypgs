@@ -11,9 +11,11 @@ uint8_t gfx_paddle_right_bottom[8] = {0xFF, 0xBF, 0xBF, 0xBF, 0x5F, 0x4F, 0x30, 
 
 class Paddle
 {
-private:
+public:
     int8_t x;
     int8_t y;
+
+private:
     uint8_t sprite_ids[2];
     PCD8544::sprite_t sprites[2];
 
@@ -30,9 +32,9 @@ public:
         sprites[1] = {0x01, uint8_t(x), uint8_t(y + 8), left ? gfx_paddle_left_bottom : gfx_paddle_right_bottom};
     }
 
-    void move(int8_t d)
+    void move(int8_t dy)
     {
-        y += d;
+        y += dy;
         if (y < 0)
         {
             y = 0;
