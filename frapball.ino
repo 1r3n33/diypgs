@@ -1,16 +1,17 @@
 #include "src/pcd8544/pcd8544.h"
 
 #include "src/game/ball.h"
+#include "src/game/circular_buffer.h"
 #include "src/game/collision.h"
 #include "src/game/paddle.h"
-#include "src/game/ybuffer.h"
 
 const uint8_t PIN_BUTTON_UP = 2;
 const uint8_t PIN_BUTTON_DOWN = 3;
 
 Ball ball;
-Paddle left(0x1);
-Paddle right(0x0);
+CircularBuffer ball_pos;
+Paddle left;
+Paddle right;
 
 void setup()
 {
@@ -18,14 +19,12 @@ void setup()
   pinMode(PIN_BUTTON_DOWN, INPUT);
 
   PCD8544::setup();
-  ball.reset();
-  left.move(0);
-  right.move(0);
 
-  for (uint8_t i = 0; i < Y_BUFFER_SIZE; i++)
-  {
-    y_buffer[i] = (ball.y >> 8) + 4;
-  }
+  ball.setup();
+  ball_pos.setup((ball.y >> 8) + 4);
+
+  left.setup(1);
+  right.setup(0);
 }
 
 void loop()
@@ -48,7 +47,6 @@ void loop()
                                 right.y + 8,
                                 4,
                                 8);
-
   ball.post_collision_update(col_data);
 
   // Player controls the left paddle
@@ -59,13 +57,10 @@ void loop()
   if (button_down_pressed)
     left.move(+1);
 
-  // The right paddle targets the ball y pos with a few frames of lag.
-  y_buffer[y_index] = (ball.y >> 8) + 4;
-  uint8_t yl = (y_index + Y_BUFFER_SIZE - 8) % Y_BUFFER_SIZE;  // 8 frames of lag
-  uint8_t yr = (y_index + Y_BUFFER_SIZE - 14) % Y_BUFFER_SIZE; // 14 frames of lag
-  y_index = (y_index + 1) % Y_BUFFER_SIZE;
-
-  right.target(y_buffer[yr]);
+  // The right paddle targets the ball y pos with 8 frames of lag.
+  ball_pos.push((ball.y >> 8) + 4);
+  const uint8_t pos = ball_pos.pop(8);
+  right.target(pos);
 
   PCD8544::render();
   delay(30);

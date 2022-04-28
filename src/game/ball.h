@@ -61,7 +61,7 @@ public:
   {
   }
 
-  void reset()
+  void setup()
   {
     x = ((PCD8544::SCREEN_WIDTH - 8) / 2) << 8;
     y = ((PCD8544::SCREEN_HEIGHT - 8) / 2) << 8;

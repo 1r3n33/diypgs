@@ -20,7 +20,11 @@ private:
     PCD8544::sprite_t sprites[2];
 
 public:
-    Paddle(uint8_t left)
+    Paddle()
+    {
+    }
+
+    void setup(const uint8_t left)
     {
         x = left ? 0 : (PCD8544::SCREEN_WIDTH - 8);
         y = (PCD8544::SCREEN_HEIGHT - 16) / 2;
@@ -30,6 +34,9 @@ public:
 
         sprites[0] = {0x01, uint8_t(x), uint8_t(y), left ? gfx_paddle_left_top : gfx_paddle_right_top};
         sprites[1] = {0x01, uint8_t(x), uint8_t(y + 8), left ? gfx_paddle_left_bottom : gfx_paddle_right_bottom};
+
+        PCD8544::set_sprite(sprite_ids[0], sprites[0]);
+        PCD8544::set_sprite(sprite_ids[1], sprites[1]);
     }
 
     void move(int8_t dy)
