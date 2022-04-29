@@ -1,3 +1,4 @@
+#include "src/controller/controller.h"
 #include "src/pcd8544/pcd8544.h"
 
 #include "src/game/ball.h"
@@ -5,9 +6,7 @@
 #include "src/game/collision.h"
 #include "src/game/paddle.h"
 
-const uint8_t PIN_BUTTON_UP = 2;
-const uint8_t PIN_BUTTON_DOWN = 3;
-
+Controller gamepad;
 Ball ball;
 CircularBuffer ball_pos;
 Paddle left;
@@ -15,10 +14,10 @@ Paddle right;
 
 void setup()
 {
-  pinMode(PIN_BUTTON_UP, INPUT);
-  pinMode(PIN_BUTTON_DOWN, INPUT);
-
   PCD8544::setup();
+
+  // Bind buttons up & down to pins 2 & 3.
+  gamepad.setup(2, 3, 0xFF, 0xFF, 0xFF, 0xFF);
 
   ball.setup();
   ball_pos.setup((ball.y >> 8) + 4);
@@ -50,11 +49,10 @@ void loop()
   ball.post_collision_update(col_data);
 
   // Player controls the left paddle
-  uint8_t button_up_pressed = digitalRead(PIN_BUTTON_UP) == HIGH;
-  uint8_t button_down_pressed = digitalRead(PIN_BUTTON_DOWN) == HIGH;
-  if (button_up_pressed)
+  const uint8_t button_pressed = gamepad.get();
+  if (button_pressed & Controller::BUTTON_UP)
     left.move(-1);
-  if (button_down_pressed)
+  if (button_pressed & Controller::BUTTON_DOWN)
     left.move(+1);
 
   // The right paddle targets the ball y pos with 8 frames of lag.
