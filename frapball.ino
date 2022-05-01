@@ -28,6 +28,8 @@ void setup()
 
 void loop()
 {
+  const uint32_t start = micros();
+
   ball.update();
 
   uint16_t col_data = 0;
@@ -48,7 +50,7 @@ void loop()
                                 8);
   ball.post_collision_update(col_data);
 
-  // Player controls the left paddle
+  // Player controls the left paddle.
   const uint8_t button_pressed = controller.get();
   if (button_pressed & Gamepad::BUTTON_UP)
     left.move(-1);
@@ -61,5 +63,10 @@ void loop()
   right.target(pos);
 
   PCD8544::render();
-  delay(30);
+
+  // Target 30 fps.
+  // Cannot use delayMicroseconds because the largest value that will produce an accurate delay is 16383.
+  // https://www.arduino.cc/reference/en/language/functions/time/delaymicroseconds/
+  const uint32_t elapsed = micros() - start;
+  delay((33333 - elapsed) / 1000);
 }
