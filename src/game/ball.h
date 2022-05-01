@@ -1,7 +1,7 @@
 #ifndef BALL_H
 #define BALL_H
 
-#include "../pcd8544/pcd8544.h"
+#include "../sdk/pcd8544.h"
 #include "collision.h"
 
 uint8_t gfx_ball[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};

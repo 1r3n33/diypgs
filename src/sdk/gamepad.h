@@ -1,7 +1,7 @@
-#ifndef CONTROLLER_H
-#define CONTROLLER_H
+#ifndef GAMEPAD_H
+#define GAMEPAD_H
 
-class Controller
+class Gamepad
 {
 private:
     uint8_t pins[6];
@@ -14,7 +14,7 @@ public:
     static const uint8_t BUTTON_A = 0x10;
     static const uint8_t BUTTON_B = 0x20;
 
-    Controller()
+    Gamepad()
     {
     }
 
