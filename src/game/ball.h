@@ -79,8 +79,10 @@ public:
     PCD8544::set_sprite(0, sprite);
   }
 
-  void update()
+  uint8_t update()
   {
+    uint8_t collision = 0;
+
     x += dx;
     y += dy;
 
@@ -90,6 +92,7 @@ public:
     {
       x = -x;
       dx = -dx;
+      collision = 1;
     }
 
     int16_t max_x = ((PCD8544::SCREEN_WIDTH - 8) << 8) | 0xFF;
@@ -97,12 +100,14 @@ public:
     {
       x = -x + (2 * max_x);
       dx = -dx;
+      collision = 1;
     }
 
     if (y < 0)
     {
       y = -y;
       dy = -dy;
+      collision = 1;
     }
 
     int16_t max_y = ((PCD8544::SCREEN_HEIGHT - 8) << 8) | 0xFF;
@@ -110,6 +115,7 @@ public:
     {
       y = -y + (2 * max_y);
       dy = -dy;
+      collision = 1;
     }
 
     sprite.x = x >> 8;
@@ -121,6 +127,8 @@ public:
     {
       no_collision_timer--;
     }
+
+    return collision;
   }
 
   void post_collision_update(uint16_t col_data)

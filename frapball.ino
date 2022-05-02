@@ -1,3 +1,4 @@
+#include "src/sdk/buzzer.h"
 #include "src/sdk/gamepad.h"
 #include "src/sdk/pcd8544.h"
 
@@ -6,7 +7,9 @@
 #include "src/game/collision.h"
 #include "src/game/paddle.h"
 
+Buzzer sound;
 Gamepad controller;
+
 Ball ball;
 CircularBuffer ball_pos;
 Paddle left;
@@ -15,6 +18,9 @@ Paddle right;
 void setup()
 {
   PCD8544::setup();
+
+  // Bind speaker to pin 8.
+  sound.setup(8);
 
   // Bind buttons up & down to pins 2 & 3.
   controller.setup(2, 3, 0xFF, 0xFF, 0xFF, 0xFF);
@@ -30,8 +36,14 @@ void loop()
 {
   const uint32_t start = micros();
 
-  ball.update();
+  // Update ball (includes wall collision checks).
+  const uint8_t collision = ball.update();
+  if (collision > 0)
+  {
+    sound.play(Buzzer::NOTE_C5, 50);
+  }
 
+  // Paddle collision checks.
   uint16_t col_data = 0;
   col_data |= compute_collision((ball.x >> 8) + 4,
                                 (ball.y >> 8) + 4,
@@ -49,6 +61,10 @@ void loop()
                                 4,
                                 8);
   ball.post_collision_update(col_data);
+  if (col_data > 0)
+  {
+    sound.play(Buzzer::NOTE_C6, 50);
+  }
 
   // Player controls the left paddle.
   const uint8_t button_pressed = controller.get();
