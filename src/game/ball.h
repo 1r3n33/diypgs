@@ -45,6 +45,13 @@ uint8_t y_reflect_id[16] = {0, 1, 1, 2, 2, 2, 3, 3, 7, 7, 7, 7, 7, 7, 7, 7};
 class Ball
 {
 public:
+  enum Result : uint8_t
+  {
+    None = 0x0,
+    Score = 0x01,
+    Collision = 0x02,
+  };
+
   int16_t x;
   int16_t y;
 
@@ -71,7 +78,7 @@ public:
 
     no_collision_timer = 0;
 
-    sprite = {0x01, uint8_t(x), uint8_t(y), gfx_ball};
+    sprite = {PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::XCLIP, uint8_t(x), uint8_t(y), gfx_ball};
 
     sprite.x = x >> 8;
     sprite.y = y >> 8;
@@ -81,33 +88,32 @@ public:
 
   uint8_t update()
   {
-    uint8_t collision = 0;
+    uint8_t res = Result::None;
 
     x += dx;
     y += dy;
 
     // Handle collisions.
-    // max_x & max_y are slightly out of bound but give good results on screen.
-    if (x < 0)
+    if (x < -16 * 256)
     {
       x = -x;
       dx = -dx;
-      collision = 1;
+      res = Result::Score;
     }
 
-    int16_t max_x = ((PCD8544::SCREEN_WIDTH - 8) << 8) | 0xFF;
+    int16_t max_x = ((PCD8544::SCREEN_WIDTH + 8) << 8) | 0xFF;
     if (x > max_x)
     {
       x = -x + (2 * max_x);
       dx = -dx;
-      collision = 1;
+      res = Result::Score;
     }
 
     if (y < 0)
     {
       y = -y;
       dy = -dy;
-      collision = 1;
+      res = Result::Collision;
     }
 
     int16_t max_y = ((PCD8544::SCREEN_HEIGHT - 8) << 8) | 0xFF;
@@ -115,7 +121,7 @@ public:
     {
       y = -y + (2 * max_y);
       dy = -dy;
-      collision = 1;
+      res = Result::Collision;
     }
 
     sprite.x = x >> 8;
@@ -128,7 +134,7 @@ public:
       no_collision_timer--;
     }
 
-    return collision;
+    return res;
   }
 
   void post_collision_update(uint16_t col_data)

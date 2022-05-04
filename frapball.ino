@@ -38,9 +38,19 @@ void loop()
 
   // Update ball (includes wall collision checks).
   const uint8_t collision = ball.update();
-  if (collision > 0)
+  if (collision & Ball::Result::Collision)
   {
     sound.play(Buzzer::NOTE_C5, 50);
+  }
+  if (collision & Ball::Result::Score)
+  {
+    sound.play(Buzzer::NOTE_C3, 200);
+    delay(500);
+    ball.setup();
+    ball_pos.setup((ball.y >> 8) + 4);
+    PCD8544::render();
+    delay(500);
+    return;
   }
 
   // Paddle collision checks.
