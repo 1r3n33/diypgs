@@ -11,6 +11,12 @@ public:
 
     struct sprite_t
     {
+        enum Flag : uint8_t
+        {
+            ENABLED = 0x01,
+            XCLIP = 0x02
+        };
+
         uint8_t flags;
         uint8_t x;
         uint8_t y;

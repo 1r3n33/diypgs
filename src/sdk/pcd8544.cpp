@@ -18,26 +18,76 @@ uint8_t buffer[BUFFER_SIZE] = {0};
 void draw_8x8(uint8_t x, uint8_t y, uint8_t *data)
 {
     uint8_t mod0 = y % 8;
+    uint8_t mod1 = 8 - mod0;
+
     int16_t y0 = (y / 8) * PCD8544::SCREEN_WIDTH;
-    for (int8_t i = 0; i < 8; i++)
+    int16_t y1 = y0 + PCD8544::SCREEN_WIDTH;
+
+    uint8_t *buf0 = buffer + y0 + x;
+    uint8_t *buf1 = buf0 + PCD8544::SCREEN_WIDTH;
+
+    uint8_t *ptr0 = data;
+    uint8_t *ptr1 = ptr0;
+
+    *buf0++ |= (*ptr0++ << mod0);
+    *buf0++ |= (*ptr0++ << mod0);
+    *buf0++ |= (*ptr0++ << mod0);
+    *buf0++ |= (*ptr0++ << mod0);
+    *buf0++ |= (*ptr0++ << mod0);
+    *buf0++ |= (*ptr0++ << mod0);
+    *buf0++ |= (*ptr0++ << mod0);
+    *buf0++ |= (*ptr0++ << mod0);
+
+    *buf1++ |= (*ptr1++ >> mod1);
+    *buf1++ |= (*ptr1++ >> mod1);
+    *buf1++ |= (*ptr1++ >> mod1);
+    *buf1++ |= (*ptr1++ >> mod1);
+    *buf1++ |= (*ptr1++ >> mod1);
+    *buf1++ |= (*ptr1++ >> mod1);
+    *buf1++ |= (*ptr1++ >> mod1);
+    *buf1++ |= (*ptr1++ >> mod1);
+}
+
+void draw_8x8_clip(int8_t x, int8_t y, uint8_t *data)
+{
+    int8_t left = max(0, x);
+    int8_t right = min(PCD8544::SCREEN_WIDTH, x + 8);
+
+    int8_t mod0 = y % 8;
+    int8_t mod1 = 8 - mod0;
+
+    int16_t y0 = (y / 8) * PCD8544::SCREEN_WIDTH;
+    int16_t y1 = y0 + PCD8544::SCREEN_WIDTH;
+
+    uint8_t *buf0 = buffer + y0 + left;
+    uint8_t *buf1 = buf0 + PCD8544::SCREEN_WIDTH;
+
+    uint8_t *ptr0 = data + (left - x);
+    uint8_t *ptr1 = ptr0;
+
+    for (int8_t i = left; i < right; i++)
     {
-        buffer[y0 + x + i] |= data[i] << mod0;
+        *buf0++ |= (*ptr0++ << mod0);
     }
 
-    uint8_t mod1 = 8 - mod0;
-    int16_t y1 = y0 + PCD8544::SCREEN_WIDTH;
-    for (int8_t i = 0; i < 8; i++)
+    for (int8_t i = left; i < right; i++)
     {
-        buffer[y1 + x + i] |= data[i] >> mod1;
+        *buf1++ |= (*ptr1++ >> mod1);
     }
 }
 
 void draw_sprite(uint8_t i)
 {
     PCD8544::sprite_t *sprite = sprites + i;
-    if (sprite->flags & 1)
+    switch (sprite->flags)
     {
+    case PCD8544::sprite_t::Flag::ENABLED:
         draw_8x8(sprite->x, sprite->y, sprite->data);
+        break;
+
+    case PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::XCLIP:
+        draw_8x8_clip(sprite->x, sprite->y, sprite->data);
+        break;
     }
 }
 
