@@ -7,7 +7,7 @@
 uint8_t gfx_ball[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
 
 // Ball speeds
-// Computed by ./tools/vec2fixed16 5 40 30 1
+// Computed by ./tools/vec2fixed16 5 40 30 0.05
 // (it produces 5 vectors with a velocity of 40 pixels/sec for a 30fps display)
 //
 // [4]
@@ -22,7 +22,8 @@ uint8_t gfx_ball[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
 //
 int16_t speed_x[8] = {341, 315, 241, 131, 0, 0, 0, 0};
 int16_t speed_y[8] = {0, 131, 241, 315, 341, 0, 0, 0};
-
+int16_t speed_inc_x[8] = {17, 16, 12, 7, 0, 0, 0, 0};
+int16_t speed_inc_y[8] = {0, 7, 12, 16, 17, 0, 0, 0};
 // Reflect ids
 // compute_collision(...) returns the dist from the axis.
 // Paddle width is 4, height is 8, so compute_collision(...) returns the following:
@@ -59,6 +60,8 @@ private:
   int16_t dx;
   int16_t dy;
 
+  uint8_t speed_mul;
+
   int8_t no_collision_timer;
 
   PCD8544::sprite_t sprite;
@@ -73,8 +76,10 @@ public:
     x = ((PCD8544::SCREEN_WIDTH - 8) / 2) << 8;
     y = ((PCD8544::SCREEN_HEIGHT - 8) / 2) << 8;
 
-    dx = speed_x[2];
-    dy = speed_y[2];
+    // Go left (Player)
+    dx = -speed_x[0];
+    dy = speed_y[0];
+    speed_mul = 1;
 
     no_collision_timer = 0;
 
@@ -151,43 +156,46 @@ public:
       return;
 
     case COLLISION_AXIS_X:
+      speed_mul++;
       no_collision_timer = 32;
       d = (col_data & 0x00FF);
       id = d < 0 ? x_reflect_id[-d] : x_reflect_id[d];
-      dx = d < 0 ? -speed_x[id] : speed_x[id];
-      dy = dy < 0 ? speed_y[id] : -speed_y[id];
+      dx = d < 0 ? -(speed_x[id] + (speed_mul * speed_inc_x[id])) : (speed_x[id] + (speed_mul * speed_inc_x[id]));
+      dy = dy < 0 ? (speed_y[id] + (speed_mul * speed_inc_y[id])) : -(speed_y[id] + (speed_mul * speed_inc_y[id]));
       return;
 
     case COLLISION_AXIS_Y:
+      speed_mul++;
       no_collision_timer = 32;
       d = (col_data & 0x00FF);
       id = d < 0 ? y_reflect_id[-d] : y_reflect_id[d];
-      dx = dx < 0 ? speed_x[id] : -speed_x[id];
-      dy = d < 0 ? -speed_y[id] : speed_y[id];
+      dx = dx < 0 ? (speed_x[id] + (speed_mul * speed_inc_x[id])) : -(speed_x[id] + (speed_mul * speed_inc_x[id]));
+      dy = d < 0 ? -(speed_y[id] + (speed_mul * speed_inc_y[id])) : (speed_y[id] + (speed_mul * speed_inc_y[id]));
       return;
 
     case COLLISION_AXIS_X | COLLISION_AXIS_Y:
+      speed_mul++;
       no_collision_timer = 32;
       switch (col_data & 0x00FF)
       {
       case 0x00:
-        dx = -speed_x[3];
-        dy = -speed_y[3];
+        dx = -(speed_x[3] + (speed_mul * speed_inc_x[3]));
+        dy = -(speed_y[3] + (speed_mul * speed_inc_y[3]));
         return;
 
       case 0x01:
-        dx = speed_x[3];
-        dy = -speed_y[3];
+        dx = (speed_x[3] + (speed_mul * speed_inc_x[3]));
+        dy = -(speed_y[3] + (speed_mul * speed_inc_y[3]));
         return;
 
       case 0x10:
-        dx = -speed_x[3];
-        dy = speed_y[3];
+        dx = -(speed_x[3] + (speed_mul * speed_inc_x[3]));
+        dy = (speed_y[3] + (speed_mul * speed_inc_y[3]));
         return;
 
       case 0x11:
-        dx = speed_x[3];
-        dy = speed_y[3];
+        dx = (speed_x[3] + (speed_mul * speed_inc_x[3]));
+        dy = (speed_y[3] + (speed_mul * speed_inc_y[3]));
         return;
       }
     }
