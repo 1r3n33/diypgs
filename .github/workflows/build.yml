@@ -1,0 +1,48 @@
+on:
+  - push
+  - pull_request
+
+env:
+  SKETCHES_REPORTS_PATH: sketches-reports
+  SKETCHES_REPORTS_ARTIFACT_NAME: sketches-reports
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Compile
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: arduino:avr:mega
+          verbose: true
+          enable-warnings-report: true
+          enable-deltas-report: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          sketch-paths: |
+            - ./
+          sketches-report-path: ${{ env.SKETCHES_REPORTS_PATH }}
+
+      - name: Upload report
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.SKETCHES_REPORTS_ARTIFACT_NAME }}
+          path: ${{ env.SKETCHES_REPORTS_PATH }}
+
+  report:
+    needs: compile
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download report
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.SKETCHES_REPORTS_ARTIFACT_NAME }}
+          path: ${{ env.SKETCHES_REPORTS_PATH }}
+
+      - uses: arduino/report-size-deltas@v1
+        with:
+          sketches-reports-source: ${{ env.SKETCHES_REPORTS_PATH }}
