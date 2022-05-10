@@ -54,25 +54,29 @@ void loop()
   }
 
   // Paddle collision checks.
-  uint16_t col_data = 0;
-  col_data |= compute_collision((ball.x >> 8) + 4,
-                                (ball.y >> 8) + 4,
-                                4,
-                                left.x + 4,
-                                left.y + 8,
-                                4,
-                                8);
-
-  col_data |= compute_collision((ball.x >> 8) + 4,
-                                (ball.y >> 8) + 4,
-                                4,
-                                right.x + 4,
-                                right.y + 8,
-                                4,
-                                8);
-  ball.post_collision_update(col_data);
-  if (col_data > 0)
+  const CollisionResult left_paddle_col = compute_collision((ball.x >> 8) + 4,
+                                                            (ball.y >> 8) + 4,
+                                                            4,
+                                                            left.x + 4,
+                                                            left.y + 8,
+                                                            4,
+                                                            8);
+  if (left_paddle_col.axis)
   {
+    ball.post_collision_update(left_paddle_col);
+    sound.play(Buzzer::NOTE_C6, 50);
+  }
+
+  const CollisionResult right_paddle_col = compute_collision((ball.x >> 8) + 4,
+                                                             (ball.y >> 8) + 4,
+                                                             4,
+                                                             right.x + 4,
+                                                             right.y + 8,
+                                                             4,
+                                                             8);
+  if (right_paddle_col.axis)
+  {
+    ball.post_collision_update(right_paddle_col);
     sound.play(Buzzer::NOTE_C6, 50);
   }
 
