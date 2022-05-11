@@ -40,28 +40,31 @@ CollisionResult compute_collision(uint8_t circle_center_x,
     int8_t dy = int8_t(circle_center_y) - int8_t(rect_center_y);
     int16_t abs_dy = dy >= 0 ? dy : -dy;
 
-    if (abs_dx > int16_t(rect_half_width + circle_radius))
+    int8_t depth_x = int16_t(rect_half_width + circle_radius) - abs_dx;
+    int8_t depth_y = int16_t(rect_half_height + circle_radius) - abs_dy;
+
+    if (depth_x <= 0)
         return NO_COLLISION;
-    if (abs_dy > int16_t(rect_half_height + circle_radius))
+    if (depth_y <= 0)
         return NO_COLLISION;
 
-    int16_t squared_x = (abs_dx - int16_t(rect_half_width)) * (abs_dx - int16_t(rect_half_width));
-    int16_t squared_y = (abs_dy - int16_t(rect_half_height)) * (abs_dy - int16_t(rect_half_height));
+    int16_t squared_x = int16_t(abs_dx - rect_half_width) * int16_t(abs_dx - rect_half_width);
+    int16_t squared_y = int16_t(abs_dy - rect_half_height) * int16_t(abs_dy - rect_half_height);
 
     if ((squared_x + squared_y) <= int16_t(circle_radius * circle_radius))
     {
         return CollisionResult{CollisionResult::Axis::X | CollisionResult::Axis::Y,
-                               0,
+                               1,
                                0,
                                uint8_t((dy < 0 ? 0 : 2) | (dx < 0 ? 0 : 1))};
     }
-    else if (abs_dx <= int16_t(rect_half_width + circle_radius) && abs_dy <= int16_t(rect_half_height))
+    else if (depth_x > 0 && abs_dy <= int16_t(rect_half_height))
     {
-        return CollisionResult{CollisionResult::Axis::Y, 0, dy, 0};
+        return CollisionResult{CollisionResult::Axis::Y, int8_t(dx < 0 ? depth_x : -depth_x), dy, 0};
     }
-    else if (abs_dy <= int16_t(rect_half_height + circle_radius) && abs_dx <= int16_t(rect_half_width))
+    else if (depth_y > 0 && abs_dx <= int16_t(rect_half_width))
     {
-        return CollisionResult{CollisionResult::Axis::X, 0, dx, 0};
+        return CollisionResult{CollisionResult::Axis::X, int8_t(dy < 0 ? depth_y : -depth_y), dx, 0};
     }
 
     return NO_COLLISION;
