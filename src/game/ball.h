@@ -63,7 +63,7 @@ private:
 
   uint8_t speed_mul;
 
-  int8_t no_collision_timer;
+  uint8_t no_collision_counter;
 
   PCD8544::sprite_t sprite;
 
@@ -82,7 +82,7 @@ public:
     dy = speed_y[0];
     speed_mul = 1;
 
-    no_collision_timer = 0;
+    no_collision_counter = 0;
 
     sprite = {PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::XCLIP, uint8_t(x), uint8_t(y), gfx_ball};
 
@@ -135,9 +135,9 @@ public:
 
     PCD8544::set_sprite(0, sprite);
 
-    if (no_collision_timer)
+    if (no_collision_counter)
     {
-      no_collision_timer--;
+      no_collision_counter--;
     }
 
     return res;
@@ -145,8 +145,11 @@ public:
 
   void post_collision_update(const CollisionResult res)
   {
+    static const uint8_t NO_COLLISION_COUNT = 8;
+    static const uint8_t MAX_SPEED_MUL = 50;
+
     int8_t d, id;
-    if (no_collision_timer)
+    if (no_collision_counter > 0)
     {
       return;
     }
@@ -157,49 +160,56 @@ public:
       return;
 
     case CollisionResult::Axis::X:
-      speed_mul++;
-      no_collision_timer = 32;
+      speed_mul = min(speed_mul + 1, MAX_SPEED_MUL);
+      no_collision_counter = NO_COLLISION_COUNT;
       d = res.dist;
       id = d < 0 ? x_reflect_id[-d] : x_reflect_id[d];
       dx = d < 0 ? -(speed_x[id] + (speed_mul * speed_inc_x[id])) : (speed_x[id] + (speed_mul * speed_inc_x[id]));
       dy = dy < 0 ? (speed_y[id] + (speed_mul * speed_inc_y[id])) : -(speed_y[id] + (speed_mul * speed_inc_y[id]));
-      return;
+      y = res.depth < 0 ? y + (uint8_t(-res.depth) << 8) : y - (uint8_t(res.depth) << 8);
+      break;
 
     case CollisionResult::Axis::Y:
-      speed_mul++;
-      no_collision_timer = 32;
+      speed_mul = min(speed_mul + 1, MAX_SPEED_MUL);
+      no_collision_counter = NO_COLLISION_COUNT;
       d = res.dist;
       id = d < 0 ? y_reflect_id[-d] : y_reflect_id[d];
       dx = dx < 0 ? (speed_x[id] + (speed_mul * speed_inc_x[id])) : -(speed_x[id] + (speed_mul * speed_inc_x[id]));
       dy = d < 0 ? -(speed_y[id] + (speed_mul * speed_inc_y[id])) : (speed_y[id] + (speed_mul * speed_inc_y[id]));
-      return;
+      x = res.depth < 0 ? x + (uint8_t(-res.depth) << 8) : x - (uint8_t(res.depth) << 8);
+      break;
 
     case CollisionResult::Axis::X | CollisionResult::Axis::Y:
-      speed_mul++;
-      no_collision_timer = 32;
+      speed_mul = min(speed_mul + 1, MAX_SPEED_MUL);
+      no_collision_counter = NO_COLLISION_COUNT;
       switch (res.corner)
       {
       case CollisionResult::Corner::TOP_LEFT:
         dx = -(speed_x[3] + (speed_mul * speed_inc_x[3]));
         dy = -(speed_y[3] + (speed_mul * speed_inc_y[3]));
-        return;
+        break;
 
       case CollisionResult::Corner::TOP_RIGHT:
         dx = (speed_x[3] + (speed_mul * speed_inc_x[3]));
         dy = -(speed_y[3] + (speed_mul * speed_inc_y[3]));
-        return;
+        break;
 
       case CollisionResult::Corner::BOTTOM_LEFT:
         dx = -(speed_x[3] + (speed_mul * speed_inc_x[3]));
         dy = (speed_y[3] + (speed_mul * speed_inc_y[3]));
-        return;
+        break;
 
       case CollisionResult::Corner::BOTTOM_RIGHT:
         dx = (speed_x[3] + (speed_mul * speed_inc_x[3]));
         dy = (speed_y[3] + (speed_mul * speed_inc_y[3]));
-        return;
+        break;
       }
+      break;
     }
+
+    sprite.x = x >> 8;
+    sprite.y = y >> 8;
+    PCD8544::set_sprite(0, sprite);
   }
 };
 
