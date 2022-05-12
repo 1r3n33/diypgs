@@ -1,29 +1,14 @@
-#ifndef BONUS_H
-#define BONUS_H
+#include "Bonus.h"
 
-#include "../sdk/pcd8544.h"
-
-uint8_t gfx_bonus_top_left[8] = {0x00, 0x00, 0x10, 0x28, 0x48, 0x90, 0xA0, 0xC0};
-uint8_t gfx_bonus_top_right[8] = {0xC0, 0xA0, 0x90, 0x48, 0x28, 0x10, 0x00, 0x00};
-uint8_t gfx_bonus_bottom_left[8] = {0x00, 0x7E, 0xE7, 0xE7, 0xE7, 0xE7, 0xFF, 0x80};
-uint8_t gfx_bonus_bottom_right[8] = {0x80, 0xFF, 0xE7, 0xE7, 0xE7, 0xE7, 0x7E, 0x00};
-
-class Bonus
+namespace game
 {
-private:
-    uint8_t state;
-    int8_t x;
-    int8_t y;
-    uint8_t sprite_ids[4];
-    PCD8544::sprite_t sprites[4];
-
-public:
-    Bonus()
+    void Bonus::setup()
     {
-    }
+        static uint8_t gfx_bonus_top_left[8] = {0x00, 0x00, 0x10, 0x28, 0x48, 0x90, 0xA0, 0xC0};
+        static uint8_t gfx_bonus_top_right[8] = {0xC0, 0xA0, 0x90, 0x48, 0x28, 0x10, 0x00, 0x00};
+        static uint8_t gfx_bonus_bottom_left[8] = {0x00, 0x7E, 0xE7, 0xE7, 0xE7, 0xE7, 0xFF, 0x80};
+        static uint8_t gfx_bonus_bottom_right[8] = {0x80, 0xFF, 0xE7, 0xE7, 0xE7, 0xE7, 0x7E, 0x00};
 
-    void setup()
-    {
         state = 0;
         x = (PCD8544::SCREEN_WIDTH / 2) - 8;
         y = (PCD8544::SCREEN_HEIGHT / 2) - 12;
@@ -44,14 +29,14 @@ public:
         PCD8544::set_sprite(sprite_ids[3], sprites[3]);
     }
 
-    void update()
+    void Bonus::update()
     {
-        if (state)
+        if (state != 0)
         {
         }
     }
 
-    void on()
+    void Bonus::on()
     {
         state = 1;
 
@@ -66,7 +51,7 @@ public:
         PCD8544::set_sprite(sprite_ids[3], sprites[3]);
     }
 
-    void off()
+    void Bonus::off()
     {
         state = 0;
 
@@ -80,6 +65,4 @@ public:
         PCD8544::set_sprite(sprite_ids[2], sprites[2]);
         PCD8544::set_sprite(sprite_ids[3], sprites[3]);
     }
-};
-
-#endif
+}
