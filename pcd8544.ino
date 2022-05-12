@@ -3,6 +3,7 @@
 #include "src/sdk/pcd8544.h"
 
 #include "src/game/ball.h"
+#include "src/game/bonus.h"
 #include "src/game/circular_buffer.h"
 #include "src/game/collision.h"
 #include "src/game/paddle.h"
@@ -11,6 +12,7 @@ Buzzer sound;
 Gamepad controller;
 
 Ball ball;
+Bonus bonus;
 CircularBuffer ball_pos;
 Paddle left;
 Paddle right;
@@ -26,6 +28,10 @@ void setup()
   controller.setup(2, 3, 0xFF, 0xFF, 0xFF, 0xFF);
 
   ball.setup();
+
+  bonus.setup();
+  bonus.on();
+
   ball_pos.setup((ball.y >> 8) + 4);
 
   left.setup(1);
