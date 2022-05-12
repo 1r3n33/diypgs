@@ -3,10 +3,12 @@
 #include "src/sdk/pcd8544.h"
 
 #include "src/game/ball.h"
-#include "src/game/bonus.h"
+#include "src/game/Bonus.h"
 #include "src/game/circular_buffer.h"
 #include "src/game/collision.h"
 #include "src/game/paddle.h"
+
+using namespace game;
 
 Buzzer sound;
 Gamepad controller;
