@@ -21,6 +21,8 @@ Paddle right;
 
 void setup()
 {
+  srand(micros());
+
   PCD8544::setup();
 
   // Bind speaker to pin 8.
@@ -32,7 +34,6 @@ void setup()
   ball.setup();
 
   bonus.setup();
-  bonus.on();
 
   ball_pos.setup((ball.y >> 8) + 4);
 
@@ -55,6 +56,7 @@ void loop()
     sound.play(Buzzer::NOTE_C3, 200);
     delay(500);
     ball.setup();
+    bonus.setup();
     ball_pos.setup((ball.y >> 8) + 4);
     PCD8544::render();
     delay(500);
@@ -86,6 +88,33 @@ void loop()
   {
     ball.post_collision_update(right_paddle_col);
     sound.play(Buzzer::NOTE_C6, 50);
+  }
+
+  // Bonus update
+  // Must be before player controls update because bonus can affect player controls.
+  bonus.update();
+  const CollisionResult bonus_col = compute_collision((ball.x >> 8) + 4,
+                                                      (ball.y >> 8) + 4,
+                                                      4,
+                                                      bonus.x + 12,
+                                                      bonus.y + 8,
+                                                      7,
+                                                      4);
+  if (bonus_col.axis && bonus.state == Bonus::State::ENABLED)
+  {
+    bonus.off();
+    sound.play(Buzzer::NOTE_C7, 50);
+
+    const Bonus::Effect effect = bonus.getEffect();
+    switch (effect)
+    {
+    case Bonus::Effect::INVERT_COMMAND_LEFT:
+      left.invert();
+      break;
+    case Bonus::Effect::INVERT_COMMAND_RIGHT:
+      right.invert();
+      break;
+    }
   }
 
   // Player controls the left paddle.
