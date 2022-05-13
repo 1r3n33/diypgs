@@ -16,6 +16,8 @@ public:
     int8_t y;
 
 private:
+    uint8_t inverted;
+
     uint8_t sprite_ids[2];
     PCD8544::sprite_t sprites[2];
 
@@ -29,6 +31,8 @@ public:
         x = left ? 0 : (PCD8544::SCREEN_WIDTH - 8);
         y = (PCD8544::SCREEN_HEIGHT - 16) / 2;
 
+        inverted = 0;
+
         sprite_ids[0] = left ? 2 : 4;
         sprite_ids[1] = left ? 3 : 5;
 
@@ -41,7 +45,7 @@ public:
 
     void move(int8_t dy)
     {
-        y += dy;
+        y = inverted ? y - dy : y + dy;
         if (y < 0)
         {
             y = 0;
@@ -69,6 +73,11 @@ public:
         {
             move(-1);
         }
+    }
+
+    void invert()
+    {
+        inverted = !inverted;
     }
 };
 

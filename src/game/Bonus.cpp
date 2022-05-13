@@ -2,6 +2,8 @@
 
 namespace game
 {
+    constexpr uint8_t SWITCH_STATE_FRAME_COUNT = 8 * 30; // 8 sec
+
     void Bonus::setup()
     {
         static uint8_t gfx_bonus_top_left[8] = {0x00, 0x00, 0x10, 0x28, 0x48, 0x90, 0xA0, 0xC0};
@@ -9,7 +11,9 @@ namespace game
         static uint8_t gfx_bonus_bottom_left[8] = {0x00, 0x7E, 0xE7, 0xE7, 0xE7, 0xE7, 0xFF, 0x80};
         static uint8_t gfx_bonus_bottom_right[8] = {0x80, 0xFF, 0xE7, 0xE7, 0xE7, 0xE7, 0x7E, 0x00};
 
-        state = 0;
+        state = !State::ENABLED;
+        switch_state_counter = SWITCH_STATE_FRAME_COUNT;
+
         x = (PCD8544::SCREEN_WIDTH / 2) - 8;
         y = (PCD8544::SCREEN_HEIGHT / 2) - 12;
 
@@ -31,14 +35,27 @@ namespace game
 
     void Bonus::update()
     {
-        if (state != 0)
+        if (switch_state_counter > 0)
         {
+            switch_state_counter--;
+            if (switch_state_counter == 0)
+            {
+                if (state == State::ENABLED)
+                {
+                    off();
+                }
+                else
+                {
+                    on();
+                }
+            }
         }
     }
 
     void Bonus::on()
     {
-        state = 1;
+        state = State::ENABLED;
+        switch_state_counter = SWITCH_STATE_FRAME_COUNT;
 
         sprites[0].flags = PCD8544::sprite_t::Flag::ENABLED;
         sprites[1].flags = PCD8544::sprite_t::Flag::ENABLED;
@@ -53,7 +70,8 @@ namespace game
 
     void Bonus::off()
     {
-        state = 0;
+        state = !State::ENABLED;
+        switch_state_counter = SWITCH_STATE_FRAME_COUNT;
 
         sprites[0].flags = !PCD8544::sprite_t::Flag::ENABLED;
         sprites[1].flags = !PCD8544::sprite_t::Flag::ENABLED;
@@ -64,5 +82,10 @@ namespace game
         PCD8544::set_sprite(sprite_ids[1], sprites[1]);
         PCD8544::set_sprite(sprite_ids[2], sprites[2]);
         PCD8544::set_sprite(sprite_ids[3], sprites[3]);
+    }
+
+    Bonus::Effect Bonus::getEffect() const
+    {
+        return rand() & 1 ? Effect::INVERT_COMMAND_LEFT : Effect::INVERT_COMMAND_RIGHT;
     }
 }
