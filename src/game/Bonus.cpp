@@ -86,6 +86,7 @@ namespace game
 
     Bonus::Effect Bonus::getEffect() const
     {
-        return rand() & 1 ? Effect::INVERT_COMMAND_LEFT : Effect::INVERT_COMMAND_RIGHT;
+        const uint8_t id = rand() % uint8_t(Effect::COUNT);
+        return Effect(id);
     }
 }
