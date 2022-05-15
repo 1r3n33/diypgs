@@ -114,6 +114,9 @@ void loop()
     case Bonus::Effect::INVERT_COMMAND_RIGHT:
       right.invert();
       break;
+    case Bonus::Effect::ACCELERATE_BALL:
+      ball.accelerate();
+      break;
     }
   }
 

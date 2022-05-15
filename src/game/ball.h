@@ -25,6 +25,23 @@ int16_t speed_y[8] = {0, 131, 241, 315, 341, 0, 0, 0};
 int16_t speed_inc_x[8] = {17, 16, 12, 7, 0, 0, 0, 0};
 int16_t speed_inc_y[8] = {0, 7, 12, 16, 17, 0, 0, 0};
 
+constexpr uint8_t MAX_SPEED_INC = 50;
+
+namespace
+{
+  inline int16_t ComputeDx(const uint8_t id, const uint8_t inc, const int8_t d)
+  {
+    const int16_t s = speed_x[id] + (inc * speed_inc_x[id]);
+    return d >= 0 ? s : -s;
+  }
+
+  inline int16_t ComputeDy(const uint8_t id, const uint8_t inc, const int8_t d)
+  {
+    const int16_t s = speed_y[id] + (inc * speed_inc_y[id]);
+    return d >= 0 ? s : -s;
+  }
+}
+
 // Reflect ids
 // compute_collision(...) returns the distance from the non-collided axis.
 // Paddle width is 4, height is 8, so compute_collision(...) returns the following:
@@ -61,7 +78,10 @@ private:
   int16_t dx;
   int16_t dy;
 
-  uint8_t speed_mul;
+  uint8_t speed_id;
+  uint8_t speed_inc;
+  int8_t speed_dir_x;
+  int8_t speed_dir_y;
 
   uint8_t no_collision_counter;
 
@@ -77,10 +97,13 @@ public:
     x = ((PCD8544::SCREEN_WIDTH - 8) / 2) << 8;
     y = ((PCD8544::SCREEN_HEIGHT - 8) / 2) << 8;
 
-    // Go left (Player)
-    dx = -speed_x[0];
-    dy = speed_y[0];
-    speed_mul = 1;
+    // Go to the player (left)
+    speed_id = 0;
+    speed_inc = 1;
+    speed_dir_x = -1;
+    speed_dir_y = 0;
+    dx = ComputeDx(speed_id, speed_inc, speed_dir_x);
+    dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
 
     no_collision_counter = 0;
 
@@ -88,7 +111,6 @@ public:
 
     sprite.x = x >> 8;
     sprite.y = y >> 8;
-
     PCD8544::set_sprite(0, sprite);
   }
 
@@ -103,7 +125,8 @@ public:
     if (x < -16 * 256)
     {
       x = -x;
-      dx = -dx;
+      speed_dir_x = -speed_dir_x;
+      dx = ComputeDx(speed_id, speed_inc, speed_dir_x);
       res = Result::Score;
     }
 
@@ -111,14 +134,16 @@ public:
     if (x > max_x)
     {
       x = -x + (2 * max_x);
-      dx = -dx;
+      speed_dir_x = -speed_dir_x;
+      dx = ComputeDx(speed_id, speed_inc, speed_dir_x);
       res = Result::Score;
     }
 
     if (y < 0)
     {
       y = -y;
-      dy = -dy;
+      speed_dir_y = -speed_dir_y;
+      dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
       res = Result::Collision;
     }
 
@@ -126,13 +151,13 @@ public:
     if (y > max_y)
     {
       y = -y + (2 * max_y);
-      dy = -dy;
+      speed_dir_y = -speed_dir_y;
+      dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
       res = Result::Collision;
     }
 
     sprite.x = x >> 8;
     sprite.y = y >> 8;
-
     PCD8544::set_sprite(0, sprite);
 
     if (no_collision_counter)
@@ -145,71 +170,73 @@ public:
 
   void post_collision_update(const CollisionResult res)
   {
-    static const uint8_t NO_COLLISION_COUNT = 8;
-    static const uint8_t MAX_SPEED_MUL = 50;
+    constexpr uint8_t NO_COLLISION_COUNT = 8;
 
-    int8_t d, id;
-    if (no_collision_counter > 0)
+    // Early out if no collision flag is raised or if there is no collision.
+    if (no_collision_counter > 0 || res.axis == CollisionResult::Axis::NONE)
     {
       return;
     }
 
     switch (res.axis)
     {
-    case CollisionResult::Axis::NONE:
-      return;
-
     case CollisionResult::Axis::X:
-      speed_mul = min(speed_mul + 1, MAX_SPEED_MUL);
-      no_collision_counter = NO_COLLISION_COUNT;
-      d = res.dist;
-      id = d < 0 ? x_reflect_id[-d] : x_reflect_id[d];
-      dx = d < 0 ? -(speed_x[id] + (speed_mul * speed_inc_x[id])) : (speed_x[id] + (speed_mul * speed_inc_x[id]));
-      dy = dy < 0 ? (speed_y[id] + (speed_mul * speed_inc_y[id])) : -(speed_y[id] + (speed_mul * speed_inc_y[id]));
+      speed_id = res.dist < 0 ? x_reflect_id[-res.dist] : x_reflect_id[res.dist];
+      speed_dir_y = -speed_dir_y;
       y = res.depth < 0 ? y + (uint8_t(-res.depth) << 8) : y - (uint8_t(res.depth) << 8);
       break;
 
     case CollisionResult::Axis::Y:
-      speed_mul = min(speed_mul + 1, MAX_SPEED_MUL);
-      no_collision_counter = NO_COLLISION_COUNT;
-      d = res.dist;
-      id = d < 0 ? y_reflect_id[-d] : y_reflect_id[d];
-      dx = dx < 0 ? (speed_x[id] + (speed_mul * speed_inc_x[id])) : -(speed_x[id] + (speed_mul * speed_inc_x[id]));
-      dy = d < 0 ? -(speed_y[id] + (speed_mul * speed_inc_y[id])) : (speed_y[id] + (speed_mul * speed_inc_y[id]));
+      speed_id = res.dist < 0 ? y_reflect_id[-res.dist] : y_reflect_id[res.dist];
+      speed_dir_x = -speed_dir_x;
+      speed_dir_y = (res.dist == 0) ? 0 : ((res.dist > 0) ? 1 : -1);
       x = res.depth < 0 ? x + (uint8_t(-res.depth) << 8) : x - (uint8_t(res.depth) << 8);
       break;
 
     case CollisionResult::Axis::X | CollisionResult::Axis::Y:
-      speed_mul = min(speed_mul + 1, MAX_SPEED_MUL);
-      no_collision_counter = NO_COLLISION_COUNT;
+      speed_id = 3;
       switch (res.corner)
       {
       case CollisionResult::Corner::TOP_LEFT:
-        dx = -(speed_x[3] + (speed_mul * speed_inc_x[3]));
-        dy = -(speed_y[3] + (speed_mul * speed_inc_y[3]));
+        speed_dir_x = -1;
+        speed_dir_y = -1;
         break;
 
       case CollisionResult::Corner::TOP_RIGHT:
-        dx = (speed_x[3] + (speed_mul * speed_inc_x[3]));
-        dy = -(speed_y[3] + (speed_mul * speed_inc_y[3]));
+        speed_dir_x = +1;
+        speed_dir_y = -1;
         break;
 
       case CollisionResult::Corner::BOTTOM_LEFT:
-        dx = -(speed_x[3] + (speed_mul * speed_inc_x[3]));
-        dy = (speed_y[3] + (speed_mul * speed_inc_y[3]));
+        speed_dir_x = -1;
+        speed_dir_y = +1;
         break;
 
       case CollisionResult::Corner::BOTTOM_RIGHT:
-        dx = (speed_x[3] + (speed_mul * speed_inc_x[3]));
-        dy = (speed_y[3] + (speed_mul * speed_inc_y[3]));
+        speed_dir_x = +1;
+        speed_dir_y = +1;
         break;
       }
       break;
     }
 
+    speed_inc = min(speed_inc + 1, MAX_SPEED_INC);
+
+    dx = ComputeDx(speed_id, speed_inc, speed_dir_x);
+    dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
+
     sprite.x = x >> 8;
     sprite.y = y >> 8;
     PCD8544::set_sprite(0, sprite);
+
+    no_collision_counter = NO_COLLISION_COUNT;
+  }
+
+  void accelerate()
+  {
+    speed_inc = min(speed_inc + 10, MAX_SPEED_INC);
+    dx = ComputeDx(speed_id, speed_inc, speed_dir_x);
+    dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
   }
 };
 

@@ -16,6 +16,8 @@ namespace game
         {
             INVERT_COMMAND_LEFT,
             INVERT_COMMAND_RIGHT,
+            ACCELERATE_BALL,
+            COUNT,
         };
 
         int8_t x;
