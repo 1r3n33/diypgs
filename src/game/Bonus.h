@@ -9,7 +9,10 @@ namespace game
     public:
         enum State : uint8_t
         {
-            ENABLED = 1,
+            DISABLED = 0,
+            FADE_IN = 1,
+            ENABLED = 2,
+            FADE_OUT = 3
         };
 
         enum class Effect : uint8_t
@@ -33,9 +36,6 @@ namespace game
         void setup();
         void update();
 
-        void on();
-        void off();
-
-        Effect getEffect() const;
+        Effect capture();
     };
 }

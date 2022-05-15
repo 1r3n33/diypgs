@@ -5,6 +5,28 @@
 #define RST_PIN 12
 #define DC_PIN 10
 
+namespace
+{
+    // https://en.wikipedia.org/wiki/Ordered_dithering
+    constexpr uint8_t bayer[17][8] = {{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+                                      {0x88, 0x00, 0x00, 0x00, 0x88, 0x00, 0x00, 0x00},
+                                      {0x88, 0x00, 0x22, 0x00, 0x88, 0x00, 0x22, 0x00},
+                                      {0xAA, 0x00, 0x22, 0x00, 0xAA, 0x00, 0x22, 0x00},
+                                      {0xAA, 0x00, 0xAA, 0x00, 0xAA, 0x00, 0xAA, 0x00},
+                                      {0xAA, 0x44, 0xAA, 0x00, 0xAA, 0x44, 0xAA, 0x00},
+                                      {0xAA, 0x44, 0xAA, 0x11, 0xAA, 0x44, 0xAA, 0x11},
+                                      {0xAA, 0x55, 0xAA, 0x11, 0xAA, 0x55, 0xAA, 0x11},
+                                      {0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x55},
+                                      {0xEE, 0x55, 0xAA, 0x55, 0xEE, 0x55, 0xAA, 0x55},
+                                      {0xEE, 0x55, 0xBB, 0x55, 0xEE, 0x55, 0xBB, 0x55},
+                                      {0xFF, 0x55, 0xBB, 0x55, 0xFF, 0x55, 0xBB, 0x55},
+                                      {0xFF, 0x55, 0xFF, 0x55, 0xFF, 0x55, 0xFF, 0x55},
+                                      {0xFF, 0xDD, 0xFF, 0x55, 0xFF, 0xDD, 0xFF, 0x55},
+                                      {0xFF, 0xDD, 0xFF, 0x77, 0xFF, 0xDD, 0xFF, 0x77},
+                                      {0xFF, 0xFF, 0xFF, 0x77, 0xFF, 0xFF, 0xFF, 0x77},
+                                      {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}};
+}
+
 SPISettings spi_settings(16 * 1000000, MSBFIRST, SPI_MODE0);
 
 #define MAX_SPRITE_COUNT 16
@@ -48,6 +70,39 @@ void draw_8x8(uint8_t x, uint8_t y, uint8_t *data)
     *buf1++ |= (*ptr1++ >> mod1);
 }
 
+void draw_8x8_alpha(uint8_t x, uint8_t y, uint8_t alpha, uint8_t *data)
+{
+    uint8_t mod0 = y % 8;
+    uint8_t mod1 = 8 - mod0;
+
+    int16_t y0 = (y / 8) * PCD8544::SCREEN_WIDTH;
+    int16_t y1 = y0 + PCD8544::SCREEN_WIDTH;
+
+    uint8_t *buf0 = buffer + y0 + x;
+    uint8_t *buf1 = buf0 + PCD8544::SCREEN_WIDTH;
+
+    uint8_t *ptr0 = data;
+    uint8_t *ptr1 = ptr0;
+
+    *buf0++ |= ((*ptr0++ << mod0) & bayer[alpha][0]);
+    *buf0++ |= ((*ptr0++ << mod0) & bayer[alpha][1]);
+    *buf0++ |= ((*ptr0++ << mod0) & bayer[alpha][2]);
+    *buf0++ |= ((*ptr0++ << mod0) & bayer[alpha][3]);
+    *buf0++ |= ((*ptr0++ << mod0) & bayer[alpha][4]);
+    *buf0++ |= ((*ptr0++ << mod0) & bayer[alpha][5]);
+    *buf0++ |= ((*ptr0++ << mod0) & bayer[alpha][6]);
+    *buf0++ |= ((*ptr0++ << mod0) & bayer[alpha][7]);
+
+    *buf1++ |= ((*ptr1++ >> mod1) & bayer[alpha][0]);
+    *buf1++ |= ((*ptr1++ >> mod1) & bayer[alpha][1]);
+    *buf1++ |= ((*ptr1++ >> mod1) & bayer[alpha][2]);
+    *buf1++ |= ((*ptr1++ >> mod1) & bayer[alpha][3]);
+    *buf1++ |= ((*ptr1++ >> mod1) & bayer[alpha][4]);
+    *buf1++ |= ((*ptr1++ >> mod1) & bayer[alpha][5]);
+    *buf1++ |= ((*ptr1++ >> mod1) & bayer[alpha][6]);
+    *buf1++ |= ((*ptr1++ >> mod1) & bayer[alpha][7]);
+}
+
 void draw_8x8_clip(int8_t x, int8_t y, uint8_t *data)
 {
     int8_t left = max(0, x);
@@ -83,6 +138,10 @@ void draw_sprite(uint8_t i)
     {
     case PCD8544::sprite_t::Flag::ENABLED:
         draw_8x8(sprite->x, sprite->y, sprite->data);
+        break;
+
+    case PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::ALPHA:
+        draw_8x8_alpha(sprite->x, sprite->y, sprite->alpha, sprite->data);
         break;
 
     case PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::XCLIP:

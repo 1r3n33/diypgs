@@ -107,7 +107,7 @@ public:
 
     no_collision_counter = 0;
 
-    sprite = {PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::XCLIP, uint8_t(x), uint8_t(y), gfx_ball};
+    sprite = {PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::XCLIP, uint8_t(x), uint8_t(y), 0xFF, gfx_ball};
 
     sprite.x = x >> 8;
     sprite.y = y >> 8;

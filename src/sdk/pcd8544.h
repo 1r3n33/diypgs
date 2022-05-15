@@ -14,12 +14,14 @@ public:
         enum Flag : uint8_t
         {
             ENABLED = 0x01,
-            XCLIP = 0x02
+            XCLIP = 0x02,
+            ALPHA = 0x04,
         };
 
         uint8_t flags;
         uint8_t x;
         uint8_t y;
+        uint8_t alpha;
         uint8_t *data;
     };
 
