@@ -102,10 +102,9 @@ void loop()
                                                       4);
   if (bonus_col.axis && bonus.state == Bonus::State::ENABLED)
   {
-    bonus.off();
     sound.play(Buzzer::NOTE_C7, 50);
 
-    const Bonus::Effect effect = bonus.getEffect();
+    const Bonus::Effect effect = bonus.capture();
     switch (effect)
     {
     case Bonus::Effect::INVERT_COMMAND_LEFT:
@@ -116,6 +115,8 @@ void loop()
       break;
     case Bonus::Effect::ACCELERATE_BALL:
       ball.accelerate();
+      break;
+    default:
       break;
     }
   }

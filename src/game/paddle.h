@@ -36,8 +36,8 @@ public:
         sprite_ids[0] = left ? 2 : 4;
         sprite_ids[1] = left ? 3 : 5;
 
-        sprites[0] = {PCD8544::sprite_t::Flag::ENABLED, uint8_t(x), uint8_t(y), left ? gfx_paddle_left_top : gfx_paddle_right_top};
-        sprites[1] = {PCD8544::sprite_t::Flag::ENABLED, uint8_t(x), uint8_t(y + 8), left ? gfx_paddle_left_bottom : gfx_paddle_right_bottom};
+        sprites[0] = {PCD8544::sprite_t::Flag::ENABLED, uint8_t(x), uint8_t(y), 0xFF, left ? gfx_paddle_left_top : gfx_paddle_right_top};
+        sprites[1] = {PCD8544::sprite_t::Flag::ENABLED, uint8_t(x), uint8_t(y + 8), 0xFF, left ? gfx_paddle_left_bottom : gfx_paddle_right_bottom};
 
         PCD8544::set_sprite(sprite_ids[0], sprites[0]);
         PCD8544::set_sprite(sprite_ids[1], sprites[1]);
