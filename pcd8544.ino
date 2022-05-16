@@ -96,8 +96,8 @@ void loop()
   const CollisionResult bonus_col = compute_collision((ball.x >> 8) + 4,
                                                       (ball.y >> 8) + 4,
                                                       4,
-                                                      bonus.x + 12,
-                                                      bonus.y + 8,
+                                                      (bonus.center_x >> 8),
+                                                      (bonus.center_y >> 8) + 4,
                                                       7,
                                                       4);
   if (bonus_col.axis && bonus.state == Bonus::State::ENABLED)

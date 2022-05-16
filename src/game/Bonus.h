@@ -23,11 +23,16 @@ namespace game
             COUNT,
         };
 
-        int8_t x;
-        int8_t y;
+        int16_t center_x;
+        int16_t center_y;
         uint8_t state;
 
     private:
+        int16_t origin_x;
+        int16_t origin_y;
+        int16_t dx;
+        int16_t dy;
+
         uint8_t switch_state_counter;
         uint8_t sprite_ids[4];
         PCD8544::sprite_t sprites[4];
