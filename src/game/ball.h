@@ -61,6 +61,14 @@ namespace
 uint8_t x_reflect_id[8] = {3, 3, 2, 2, 7, 7, 7, 7};
 uint8_t y_reflect_id[16] = {0, 1, 1, 2, 2, 2, 3, 3, 7, 7, 7, 7, 7, 7, 7, 7};
 
+// Score
+constexpr int16_t SCORE_LEFT_POS = -16 * 256;
+constexpr int16_t SCORE_RIGHT_POS = ((PCD8544::SCREEN_WIDTH + 16) * 256);
+
+// Collision
+constexpr int16_t COLLISION_TOP_POS = 0;
+constexpr int16_t COLLISION_BOTTOM_POS = ((PCD8544::SCREEN_HEIGHT - 8) << 8) | 0xFF;
+
 class Ball
 {
 public:
@@ -121,25 +129,14 @@ public:
     x += dx;
     y += dy;
 
-    // Handle collisions.
-    if (x < -16 * 256)
+    // Check score
+    if (x < SCORE_LEFT_POS || x > SCORE_RIGHT_POS)
     {
-      x = -x;
-      speed_dir_x = -speed_dir_x;
-      dx = ComputeDx(speed_id, speed_inc, speed_dir_x);
-      res = Result::Score;
+      return Result::Score;
     }
 
-    int16_t max_x = ((PCD8544::SCREEN_WIDTH + 8) << 8) | 0xFF;
-    if (x > max_x)
-    {
-      x = -x + (2 * max_x);
-      speed_dir_x = -speed_dir_x;
-      dx = ComputeDx(speed_id, speed_inc, speed_dir_x);
-      res = Result::Score;
-    }
-
-    if (y < 0)
+    // Check collision
+    if (y < COLLISION_TOP_POS)
     {
       y = -y;
       speed_dir_y = -speed_dir_y;
@@ -147,10 +144,9 @@ public:
       res = Result::Collision;
     }
 
-    int16_t max_y = ((PCD8544::SCREEN_HEIGHT - 8) << 8) | 0xFF;
-    if (y > max_y)
+    if (y > COLLISION_BOTTOM_POS)
     {
-      y = -y + (2 * max_y);
+      y = -y + (2 * COLLISION_BOTTOM_POS);
       speed_dir_y = -speed_dir_y;
       dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
       res = Result::Collision;
