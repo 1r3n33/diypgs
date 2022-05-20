@@ -31,7 +31,7 @@ SPISettings spi_settings(16 * 1000000, MSBFIRST, SPI_MODE0);
 
 #define MAX_SPRITE_COUNT 16
 
-PCD8544::sprite_t sprites[MAX_SPRITE_COUNT] = {0};
+PCD8544::sprite_t sprites[MAX_SPRITE_COUNT] = {{0, 0, 0, 0, 0}};
 
 #define BUFFER_SIZE (6 * PCD8544::SCREEN_WIDTH)
 
@@ -43,7 +43,6 @@ void draw_8x8(uint8_t x, uint8_t y, uint8_t *data)
     uint8_t mod1 = 8 - mod0;
 
     int16_t y0 = (y / 8) * PCD8544::SCREEN_WIDTH;
-    int16_t y1 = y0 + PCD8544::SCREEN_WIDTH;
 
     uint8_t *buf0 = buffer + y0 + x;
     uint8_t *buf1 = buf0 + PCD8544::SCREEN_WIDTH;
@@ -76,7 +75,6 @@ void draw_8x8_alpha(uint8_t x, uint8_t y, uint8_t alpha, uint8_t *data)
     uint8_t mod1 = 8 - mod0;
 
     int16_t y0 = (y / 8) * PCD8544::SCREEN_WIDTH;
-    int16_t y1 = y0 + PCD8544::SCREEN_WIDTH;
 
     uint8_t *buf0 = buffer + y0 + x;
     uint8_t *buf1 = buf0 + PCD8544::SCREEN_WIDTH;
@@ -112,7 +110,6 @@ void draw_8x8_clip(int8_t x, int8_t y, uint8_t *data)
     int8_t mod1 = 8 - mod0;
 
     int16_t y0 = (y / 8) * PCD8544::SCREEN_WIDTH;
-    int16_t y1 = y0 + PCD8544::SCREEN_WIDTH;
 
     uint8_t *buf0 = buffer + y0 + left;
     uint8_t *buf1 = buf0 + PCD8544::SCREEN_WIDTH;
