@@ -23,7 +23,7 @@ jobs:
           enable-deltas-report: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
           sketch-paths: |
-            - ./
+            - ./arduino/diypgs/
           sketches-report-path: ${{ env.SKETCHES_REPORTS_PATH }}
 
       - name: Upload report
