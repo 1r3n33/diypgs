@@ -1,5 +1,5 @@
 #include "src/sdk/buzzer.h"
-#include "src/sdk/gamepad.h"
+#include "src/sdk/Gamepad.h"
 #include "src/sdk/Pcd8544.h"
 
 #include "src/game/ball.h"
@@ -11,7 +11,7 @@
 using namespace game;
 
 Buzzer sound;
-Gamepad controller;
+Gamepad controller(2, 3, 0xFF, 0xFF, 0xFF, 0xFF);
 Pcd8544 display(10, 12);
 
 Ball ball;
@@ -29,8 +29,7 @@ void setup()
   // Bind speaker to pin 8.
   sound.setup(8);
 
-  // Bind buttons up & down to pins 2 & 3.
-  controller.setup(2, 3, 0xFF, 0xFF, 0xFF, 0xFF);
+  controller.setup();
 
   ball.setup();
 
@@ -124,9 +123,9 @@ void loop()
 
   // Player controls the left paddle.
   const uint8_t button_pressed = controller.get();
-  if (button_pressed & Gamepad::BUTTON_UP)
+  if (button_pressed & Gamepad::Button::UP)
     left.move(-1);
-  if (button_pressed & Gamepad::BUTTON_DOWN)
+  if (button_pressed & Gamepad::Button::DOWN)
     left.move(+1);
 
   // The right paddle targets the ball y pos with 8 frames of lag.
