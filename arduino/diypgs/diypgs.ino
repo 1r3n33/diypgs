@@ -1,4 +1,4 @@
-#include "src/sdk/buzzer.h"
+#include "src/sdk/Buzzer.h"
 #include "src/sdk/Gamepad.h"
 #include "src/sdk/Pcd8544.h"
 
@@ -10,7 +10,7 @@
 
 using namespace game;
 
-Buzzer sound;
+Buzzer sound(8);
 Gamepad controller(2, 3, 0xFF, 0xFF, 0xFF, 0xFF);
 Pcd8544 display(10, 12);
 
@@ -24,19 +24,13 @@ void setup()
 {
   srand(micros());
 
+  sound.setup();
+  controller.setup();
   display.setup();
 
-  // Bind speaker to pin 8.
-  sound.setup(8);
-
-  controller.setup();
-
   ball.setup();
-
   bonus.setup();
-
   ball_pos.setup((ball.y >> 8) + 4);
-
   left.setup(1);
   right.setup(0);
 }
@@ -49,11 +43,11 @@ void loop()
   const uint8_t collision = ball.update();
   if (collision & Ball::Result::Collision)
   {
-    sound.play(Buzzer::NOTE_C5, 50);
+    sound.play(Buzzer::Note::C5, 50);
   }
   if (collision & Ball::Result::Score)
   {
-    sound.play(Buzzer::NOTE_C3, 200);
+    sound.play(Buzzer::Note::C3, 200);
     delay(500);
     ball.setup();
     bonus.setup();
@@ -74,7 +68,7 @@ void loop()
   if (left_paddle_col.axis)
   {
     ball.post_collision_update(left_paddle_col);
-    sound.play(Buzzer::NOTE_C6, 50);
+    sound.play(Buzzer::Note::C6, 50);
   }
 
   const CollisionResult right_paddle_col = compute_collision((ball.x >> 8) + 4,
@@ -87,7 +81,7 @@ void loop()
   if (right_paddle_col.axis)
   {
     ball.post_collision_update(right_paddle_col);
-    sound.play(Buzzer::NOTE_C6, 50);
+    sound.play(Buzzer::Note::C6, 50);
   }
 
   // Bonus update
@@ -102,7 +96,7 @@ void loop()
                                                       4);
   if (bonus_col.axis && bonus.state == Bonus::State::ENABLED)
   {
-    sound.play(Buzzer::NOTE_C7, 50);
+    sound.play(Buzzer::Note::C7, 50);
 
     const Bonus::Effect effect = bonus.capture();
     switch (effect)
