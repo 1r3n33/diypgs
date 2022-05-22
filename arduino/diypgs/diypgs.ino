@@ -1,6 +1,6 @@
 #include "src/sdk/buzzer.h"
 #include "src/sdk/gamepad.h"
-#include "src/sdk/pcd8544.h"
+#include "src/sdk/Pcd8544.h"
 
 #include "src/game/ball.h"
 #include "src/game/Bonus.h"
@@ -12,6 +12,7 @@ using namespace game;
 
 Buzzer sound;
 Gamepad controller;
+Pcd8544 display(10, 12);
 
 Ball ball;
 Bonus bonus;
@@ -23,7 +24,7 @@ void setup()
 {
   srand(micros());
 
-  PCD8544::setup();
+  display.setup();
 
   // Bind speaker to pin 8.
   sound.setup(8);
@@ -58,7 +59,7 @@ void loop()
     ball.setup();
     bonus.setup();
     ball_pos.setup((ball.y >> 8) + 4);
-    PCD8544::render();
+    display.render();
     delay(500);
     return;
   }
@@ -133,7 +134,7 @@ void loop()
   const uint8_t pos = ball_pos.pop(8);
   right.target(pos);
 
-  PCD8544::render();
+  display.render();
 
   // Target 30 fps.
   // Cannot use delayMicroseconds because the largest value that will produce an accurate delay is 16383.

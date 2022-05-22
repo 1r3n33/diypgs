@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../sdk/pcd8544.h"
+#include "../sdk/Pcd8544.h"
 
 namespace game
 {
@@ -35,7 +35,7 @@ namespace game
 
         uint8_t switch_state_counter;
         uint8_t sprite_ids[4];
-        PCD8544::sprite_t sprites[4];
+        Pcd8544::Sprite sprites[4];
 
     public:
         void setup();
