@@ -5,10 +5,10 @@ namespace game
     constexpr uint8_t DISABLED_FRAME_COUNT = 8 * 30; // 8 sec
     constexpr uint8_t ENABLED_FRAME_COUNT = 8 * 30;  // 8 sec
 
-    constexpr uint8_t WINDOW_MIN_X = (PCD8544::SCREEN_WIDTH / 2) - (PCD8544::SCREEN_WIDTH / 4);
-    constexpr uint8_t WINDOW_MAX_X = (PCD8544::SCREEN_WIDTH / 2) + (PCD8544::SCREEN_WIDTH / 4);
-    constexpr uint8_t WINDOW_MIN_Y = (PCD8544::SCREEN_HEIGHT / 2) - (PCD8544::SCREEN_HEIGHT / 4);
-    constexpr uint8_t WINDOW_MAX_Y = (PCD8544::SCREEN_HEIGHT / 2) + (PCD8544::SCREEN_HEIGHT / 4);
+    constexpr uint8_t WINDOW_MIN_X = (Pcd8544::SCREEN_WIDTH / 2) - (Pcd8544::SCREEN_WIDTH / 4);
+    constexpr uint8_t WINDOW_MAX_X = (Pcd8544::SCREEN_WIDTH / 2) + (Pcd8544::SCREEN_WIDTH / 4);
+    constexpr uint8_t WINDOW_MIN_Y = (Pcd8544::SCREEN_HEIGHT / 2) - (Pcd8544::SCREEN_HEIGHT / 4);
+    constexpr uint8_t WINDOW_MAX_Y = (Pcd8544::SCREEN_HEIGHT / 2) + (Pcd8544::SCREEN_HEIGHT / 4);
 
     constexpr int16_t HALF_HORIZONTAL_MOTION = 8 << 8;
     constexpr int16_t HALF_VERTICAL_MOTION = 2 << 8;
@@ -26,8 +26,8 @@ namespace game
         state = State::DISABLED;
         switch_state_counter = DISABLED_FRAME_COUNT;
 
-        origin_x = (PCD8544::SCREEN_WIDTH / 2) << 8;
-        origin_y = (PCD8544::SCREEN_HEIGHT / 2) << 8;
+        origin_x = (Pcd8544::SCREEN_WIDTH / 2) << 8;
+        origin_y = (Pcd8544::SCREEN_HEIGHT / 2) << 8;
         center_x = origin_x;
         center_y = origin_y;
         dx = HORIZONTAL_SPEED;
@@ -38,15 +38,15 @@ namespace game
         sprite_ids[2] = 8;
         sprite_ids[3] = 9;
 
-        sprites[0] = {PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::ALPHA, uint8_t((center_x >> 8) - 8), uint8_t((center_y >> 8) - 8), 0, gfx_bonus_top_left};
-        sprites[1] = {PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::ALPHA, uint8_t(center_x >> 8), uint8_t((center_y >> 8) - 8), 0, gfx_bonus_top_right};
-        sprites[2] = {PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::ALPHA, uint8_t((center_x >> 8) - 8), uint8_t(center_y >> 8), 0, gfx_bonus_bottom_left};
-        sprites[3] = {PCD8544::sprite_t::Flag::ENABLED | PCD8544::sprite_t::Flag::ALPHA, uint8_t(center_x >> 8), uint8_t(center_y >> 8), 0, gfx_bonus_bottom_right};
+        sprites[0] = {Pcd8544::Sprite::Flag::ENABLED | Pcd8544::Sprite::Flag::ALPHA, uint8_t((center_x >> 8) - 8), uint8_t((center_y >> 8) - 8), 0, gfx_bonus_top_left};
+        sprites[1] = {Pcd8544::Sprite::Flag::ENABLED | Pcd8544::Sprite::Flag::ALPHA, uint8_t(center_x >> 8), uint8_t((center_y >> 8) - 8), 0, gfx_bonus_top_right};
+        sprites[2] = {Pcd8544::Sprite::Flag::ENABLED | Pcd8544::Sprite::Flag::ALPHA, uint8_t((center_x >> 8) - 8), uint8_t(center_y >> 8), 0, gfx_bonus_bottom_left};
+        sprites[3] = {Pcd8544::Sprite::Flag::ENABLED | Pcd8544::Sprite::Flag::ALPHA, uint8_t(center_x >> 8), uint8_t(center_y >> 8), 0, gfx_bonus_bottom_right};
 
-        PCD8544::set_sprite(sprite_ids[0], sprites[0]);
-        PCD8544::set_sprite(sprite_ids[1], sprites[1]);
-        PCD8544::set_sprite(sprite_ids[2], sprites[2]);
-        PCD8544::set_sprite(sprite_ids[3], sprites[3]);
+        Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
+        Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
+        Pcd8544::set_sprite(sprite_ids[2], sprites[2]);
+        Pcd8544::set_sprite(sprite_ids[3], sprites[3]);
     }
 
     void Bonus::update()
@@ -156,10 +156,10 @@ namespace game
             break;
         }
 
-        PCD8544::set_sprite(sprite_ids[0], sprites[0]);
-        PCD8544::set_sprite(sprite_ids[1], sprites[1]);
-        PCD8544::set_sprite(sprite_ids[2], sprites[2]);
-        PCD8544::set_sprite(sprite_ids[3], sprites[3]);
+        Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
+        Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
+        Pcd8544::set_sprite(sprite_ids[2], sprites[2]);
+        Pcd8544::set_sprite(sprite_ids[3], sprites[3]);
     }
 
     Bonus::Effect Bonus::capture()
@@ -169,10 +169,10 @@ namespace game
         sprites[2].alpha = 0;
         sprites[3].alpha = 0;
 
-        PCD8544::set_sprite(sprite_ids[0], sprites[0]);
-        PCD8544::set_sprite(sprite_ids[1], sprites[1]);
-        PCD8544::set_sprite(sprite_ids[2], sprites[2]);
-        PCD8544::set_sprite(sprite_ids[3], sprites[3]);
+        Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
+        Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
+        Pcd8544::set_sprite(sprite_ids[2], sprites[2]);
+        Pcd8544::set_sprite(sprite_ids[3], sprites[3]);
 
         state = State::DISABLED;
         switch_state_counter = DISABLED_FRAME_COUNT;
