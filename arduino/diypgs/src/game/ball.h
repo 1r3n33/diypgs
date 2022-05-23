@@ -1,7 +1,6 @@
-#ifndef BALL_H
-#define BALL_H
+#pragma once
 
-#include "../sdk/Pcd8544.h"
+#include "../hw/Pcd8544.h"
 #include "collision.h"
 
 uint8_t gfx_ball[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
@@ -63,11 +62,11 @@ uint8_t y_reflect_id[16] = {0, 1, 1, 2, 2, 2, 3, 3, 7, 7, 7, 7, 7, 7, 7, 7};
 
 // Score
 constexpr int16_t SCORE_LEFT_POS = -16 * 256;
-constexpr int16_t SCORE_RIGHT_POS = ((Pcd8544::SCREEN_WIDTH + 16) * 256);
+constexpr int16_t SCORE_RIGHT_POS = ((hw::Pcd8544::SCREEN_WIDTH + 16) * 256);
 
 // Collision
 constexpr int16_t COLLISION_TOP_POS = 0;
-constexpr int16_t COLLISION_BOTTOM_POS = ((Pcd8544::SCREEN_HEIGHT - 8) << 8) | 0xFF;
+constexpr int16_t COLLISION_BOTTOM_POS = ((hw::Pcd8544::SCREEN_HEIGHT - 8) << 8) | 0xFF;
 
 class Ball
 {
@@ -93,7 +92,7 @@ private:
 
   uint8_t no_collision_counter;
 
-  Pcd8544::Sprite sprite;
+  hw::Pcd8544::Sprite sprite;
 
 public:
   Ball()
@@ -102,8 +101,8 @@ public:
 
   void setup()
   {
-    x = ((Pcd8544::SCREEN_WIDTH - 8) / 2) << 8;
-    y = ((Pcd8544::SCREEN_HEIGHT - 8) / 2) << 8;
+    x = ((hw::Pcd8544::SCREEN_WIDTH - 8) / 2) << 8;
+    y = ((hw::Pcd8544::SCREEN_HEIGHT - 8) / 2) << 8;
 
     // Go to the player (left)
     speed_id = 0;
@@ -115,11 +114,11 @@ public:
 
     no_collision_counter = 0;
 
-    sprite = {Pcd8544::Sprite::Flag::ENABLED | Pcd8544::Sprite::Flag::XCLIP, uint8_t(x), uint8_t(y), 0xFF, gfx_ball};
+    sprite = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::XCLIP, uint8_t(x), uint8_t(y), 0xFF, gfx_ball};
 
     sprite.x = x >> 8;
     sprite.y = y >> 8;
-    Pcd8544::set_sprite(0, sprite);
+    hw::Pcd8544::set_sprite(0, sprite);
   }
 
   uint8_t update()
@@ -154,7 +153,7 @@ public:
 
     sprite.x = x >> 8;
     sprite.y = y >> 8;
-    Pcd8544::set_sprite(0, sprite);
+    hw::Pcd8544::set_sprite(0, sprite);
 
     if (no_collision_counter)
     {
@@ -223,7 +222,7 @@ public:
 
     sprite.x = x >> 8;
     sprite.y = y >> 8;
-    Pcd8544::set_sprite(0, sprite);
+    hw::Pcd8544::set_sprite(0, sprite);
 
     no_collision_counter = NO_COLLISION_COUNT;
   }
@@ -235,5 +234,3 @@ public:
     dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
   }
 };
-
-#endif
