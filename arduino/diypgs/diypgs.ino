@@ -1,6 +1,6 @@
-#include "src/sdk/Buzzer.h"
-#include "src/sdk/Gamepad.h"
-#include "src/sdk/Pcd8544.h"
+#include "src/hw/Buzzer.h"
+#include "src/hw/Gamepad.h"
+#include "src/hw/Pcd8544.h"
 
 #include "src/game/ball.h"
 #include "src/game/Bonus.h"
@@ -8,14 +8,12 @@
 #include "src/game/collision.h"
 #include "src/game/paddle.h"
 
-using namespace game;
-
-Buzzer sound(8);
-Gamepad controller(2, 3, 0xFF, 0xFF, 0xFF, 0xFF);
-Pcd8544 display(10, 12);
+hw::Buzzer sound(8);
+hw::Gamepad controller(2, 3, 0xFF, 0xFF, 0xFF, 0xFF);
+hw::Pcd8544 display(10, 12);
 
 Ball ball;
-Bonus bonus;
+game::Bonus bonus;
 CircularBuffer ball_pos;
 Paddle left;
 Paddle right;
@@ -43,11 +41,11 @@ void loop()
   const uint8_t collision = ball.update();
   if (collision & Ball::Result::Collision)
   {
-    sound.play(Buzzer::Note::C5, 50);
+    sound.play(hw::Buzzer::Note::C5, 50);
   }
   if (collision & Ball::Result::Score)
   {
-    sound.play(Buzzer::Note::C3, 200);
+    sound.play(hw::Buzzer::Note::C3, 200);
     delay(500);
     ball.setup();
     bonus.setup();
@@ -68,7 +66,7 @@ void loop()
   if (left_paddle_col.axis)
   {
     ball.post_collision_update(left_paddle_col);
-    sound.play(Buzzer::Note::C6, 50);
+    sound.play(hw::Buzzer::Note::C6, 50);
   }
 
   const CollisionResult right_paddle_col = compute_collision((ball.x >> 8) + 4,
@@ -81,7 +79,7 @@ void loop()
   if (right_paddle_col.axis)
   {
     ball.post_collision_update(right_paddle_col);
-    sound.play(Buzzer::Note::C6, 50);
+    sound.play(hw::Buzzer::Note::C6, 50);
   }
 
   // Bonus update
@@ -94,20 +92,20 @@ void loop()
                                                       (bonus.center_y >> 8) + 4,
                                                       7,
                                                       4);
-  if (bonus_col.axis && bonus.state == Bonus::State::ENABLED)
+  if (bonus_col.axis && bonus.state == game::Bonus::State::ENABLED)
   {
-    sound.play(Buzzer::Note::C7, 50);
+    sound.play(hw::Buzzer::Note::C7, 50);
 
-    const Bonus::Effect effect = bonus.capture();
+    const game::Bonus::Effect effect = bonus.capture();
     switch (effect)
     {
-    case Bonus::Effect::INVERT_COMMAND_LEFT:
+    case game::Bonus::Effect::INVERT_COMMAND_LEFT:
       left.invert();
       break;
-    case Bonus::Effect::INVERT_COMMAND_RIGHT:
+    case game::Bonus::Effect::INVERT_COMMAND_RIGHT:
       right.invert();
       break;
-    case Bonus::Effect::ACCELERATE_BALL:
+    case game::Bonus::Effect::ACCELERATE_BALL:
       ball.accelerate();
       break;
     default:
@@ -117,9 +115,9 @@ void loop()
 
   // Player controls the left paddle.
   const uint8_t button_pressed = controller.get();
-  if (button_pressed & Gamepad::Button::UP)
+  if (button_pressed & hw::Gamepad::Button::UP)
     left.move(-1);
-  if (button_pressed & Gamepad::Button::DOWN)
+  if (button_pressed & hw::Gamepad::Button::DOWN)
     left.move(+1);
 
   // The right paddle targets the ball y pos with 8 frames of lag.

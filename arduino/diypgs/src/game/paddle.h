@@ -1,7 +1,6 @@
-#ifndef PADDLE_H
-#define PADDLE_H
+#pragma once
 
-#include "../sdk/Pcd8544.h"
+#include "../hw/Pcd8544.h"
 
 uint8_t gfx_paddle_left_top[8] = {0xF0, 0x0C, 0xF2, 0xFA, 0xFD, 0xFD, 0xFD, 0xFF};
 uint8_t gfx_paddle_left_bottom[8] = {0x0F, 0x30, 0x4F, 0x5F, 0xBF, 0xBF, 0xBF, 0xFF};
@@ -19,7 +18,7 @@ private:
     uint8_t inverted;
 
     uint8_t sprite_ids[2];
-    Pcd8544::Sprite sprites[2];
+    hw::Pcd8544::Sprite sprites[2];
 
 public:
     Paddle()
@@ -28,19 +27,19 @@ public:
 
     void setup(const uint8_t left)
     {
-        x = left ? 0 : (Pcd8544::SCREEN_WIDTH - 8);
-        y = (Pcd8544::SCREEN_HEIGHT - 16) / 2;
+        x = left ? 0 : (hw::Pcd8544::SCREEN_WIDTH - 8);
+        y = (hw::Pcd8544::SCREEN_HEIGHT - 16) / 2;
 
         inverted = 0;
 
         sprite_ids[0] = left ? 2 : 4;
         sprite_ids[1] = left ? 3 : 5;
 
-        sprites[0] = {Pcd8544::Sprite::Flag::ENABLED, uint8_t(x), uint8_t(y), 0xFF, left ? gfx_paddle_left_top : gfx_paddle_right_top};
-        sprites[1] = {Pcd8544::Sprite::Flag::ENABLED, uint8_t(x), uint8_t(y + 8), 0xFF, left ? gfx_paddle_left_bottom : gfx_paddle_right_bottom};
+        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED, uint8_t(x), uint8_t(y), 0xFF, left ? gfx_paddle_left_top : gfx_paddle_right_top};
+        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED, uint8_t(x), uint8_t(y + 8), 0xFF, left ? gfx_paddle_left_bottom : gfx_paddle_right_bottom};
 
-        Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
-        Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
+        hw::Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
+        hw::Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
     }
 
     void move(int8_t dy)
@@ -50,16 +49,16 @@ public:
         {
             y = 0;
         }
-        if (y > Pcd8544::SCREEN_HEIGHT - 16)
+        if (y > hw::Pcd8544::SCREEN_HEIGHT - 16)
         {
-            y = Pcd8544::SCREEN_HEIGHT - 16;
+            y = hw::Pcd8544::SCREEN_HEIGHT - 16;
         }
 
         sprites[0].y = y;
         sprites[1].y = y + 8;
 
-        Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
-        Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
+        hw::Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
+        hw::Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
     }
 
     void target(uint8_t target)
@@ -80,5 +79,3 @@ public:
         inverted = !inverted;
     }
 };
-
-#endif
