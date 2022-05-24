@@ -3,31 +3,31 @@
 #include "../hw/Pcd8544.h"
 #include "../sdk/Collision.h"
 
-uint8_t gfx_ball[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
-
-// Ball speeds
-// Computed by ./tools/vec2fixed16 5 40 30 0.05
-// (it produces 5 vectors with a velocity of 40 pixels/sec for a 30fps display)
-//
-// [4]
-//  x   [3]
-//  |    x     [2]
-//  |          x
-//  |               [1]
-//  |              x
-//  |
-// -+----------------x [0]
-//  |
-//
-int16_t speed_x[8] = {341, 315, 241, 131, 0, 0, 0, 0};
-int16_t speed_y[8] = {0, 131, 241, 315, 341, 0, 0, 0};
-int16_t speed_inc_x[8] = {17, 16, 12, 7, 0, 0, 0, 0};
-int16_t speed_inc_y[8] = {0, 7, 12, 16, 17, 0, 0, 0};
-
-constexpr uint8_t MAX_SPEED_INC = 50;
-
 namespace
 {
+  uint8_t gfx_ball[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
+
+  // Ball speeds
+  // Computed by ./tools/vec2fixed16 5 40 30 0.05
+  // (it produces 5 vectors with a velocity of 40 pixels/sec for a 30fps display)
+  //
+  // [4]
+  //  x   [3]
+  //  |    x     [2]
+  //  |          x
+  //  |               [1]
+  //  |              x
+  //  |
+  // -+----------------x [0]
+  //  |
+  //
+  int16_t speed_x[8] = {341, 315, 241, 131, 0, 0, 0, 0};
+  int16_t speed_y[8] = {0, 131, 241, 315, 341, 0, 0, 0};
+  int16_t speed_inc_x[8] = {17, 16, 12, 7, 0, 0, 0, 0};
+  int16_t speed_inc_y[8] = {0, 7, 12, 16, 17, 0, 0, 0};
+
+  constexpr uint8_t MAX_SPEED_INC = 50;
+
   inline int16_t ComputeDx(const uint8_t id, const uint8_t inc, const int8_t d)
   {
     const int16_t s = speed_x[id] + (inc * speed_inc_x[id]);
@@ -39,34 +39,34 @@ namespace
     const int16_t s = speed_y[id] + (inc * speed_inc_y[id]);
     return d >= 0 ? s : -s;
   }
+
+  // Reflect ids
+  // compute_collision(...) returns the distance from the non-collided axis.
+  // Paddle width is 4, height is 8, so compute_collision(...) returns the following:
+  //
+  //   0123
+  //  -+--+ 7
+  //   |  | 6
+  //   |  | 5
+  //   |  | 4
+  //   |  | 3 <-- get speeds at y_reflect_ids[3]
+  //   |  | 2
+  //   |  | 1
+  // y-o--+ 0
+  //   |  |
+  //   x
+  //
+  uint8_t x_reflect_id[8] = {3, 3, 2, 2, 7, 7, 7, 7};
+  uint8_t y_reflect_id[16] = {0, 1, 1, 2, 2, 2, 3, 3, 7, 7, 7, 7, 7, 7, 7, 7};
+
+  // Score
+  constexpr int16_t SCORE_LEFT_POS = -16 * 256;
+  constexpr int16_t SCORE_RIGHT_POS = ((hw::Pcd8544::SCREEN_WIDTH + 16) * 256);
+
+  // Collision
+  constexpr int16_t COLLISION_TOP_POS = 0;
+  constexpr int16_t COLLISION_BOTTOM_POS = ((hw::Pcd8544::SCREEN_HEIGHT - 8) << 8) | 0xFF;
 }
-
-// Reflect ids
-// compute_collision(...) returns the distance from the non-collided axis.
-// Paddle width is 4, height is 8, so compute_collision(...) returns the following:
-//
-//   0123
-//  -+--+ 7
-//   |  | 6
-//   |  | 5
-//   |  | 4
-//   |  | 3 <-- get speeds at y_reflect_ids[3]
-//   |  | 2
-//   |  | 1
-// y-o--+ 0
-//   |  |
-//   x
-//
-uint8_t x_reflect_id[8] = {3, 3, 2, 2, 7, 7, 7, 7};
-uint8_t y_reflect_id[16] = {0, 1, 1, 2, 2, 2, 3, 3, 7, 7, 7, 7, 7, 7, 7, 7};
-
-// Score
-constexpr int16_t SCORE_LEFT_POS = -16 * 256;
-constexpr int16_t SCORE_RIGHT_POS = ((hw::Pcd8544::SCREEN_WIDTH + 16) * 256);
-
-// Collision
-constexpr int16_t COLLISION_TOP_POS = 0;
-constexpr int16_t COLLISION_BOTTOM_POS = ((hw::Pcd8544::SCREEN_HEIGHT - 8) << 8) | 0xFF;
 
 class Ball
 {
