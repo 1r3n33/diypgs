@@ -2,10 +2,11 @@
 #include "src/hw/Gamepad.h"
 #include "src/hw/Pcd8544.h"
 
+#include "src/sdk/Collision.h"
+
 #include "src/game/ball.h"
 #include "src/game/Bonus.h"
 #include "src/game/circular_buffer.h"
-#include "src/game/collision.h"
 #include "src/game/paddle.h"
 
 hw::Buzzer sound(8);
@@ -56,26 +57,26 @@ void loop()
   }
 
   // Paddle collision checks.
-  const CollisionResult left_paddle_col = compute_collision((ball.x >> 8) + 4,
-                                                            (ball.y >> 8) + 4,
-                                                            4,
-                                                            left.x + 4,
-                                                            left.y + 8,
-                                                            4,
-                                                            8);
+  const sdk::CollisionResult left_paddle_col = sdk::ComputeCollision((ball.x >> 8) + 4,
+                                                                     (ball.y >> 8) + 4,
+                                                                     4,
+                                                                     left.x + 4,
+                                                                     left.y + 8,
+                                                                     4,
+                                                                     8);
   if (left_paddle_col.axis)
   {
     ball.post_collision_update(left_paddle_col);
     sound.play(hw::Buzzer::Note::C6, 50);
   }
 
-  const CollisionResult right_paddle_col = compute_collision((ball.x >> 8) + 4,
-                                                             (ball.y >> 8) + 4,
-                                                             4,
-                                                             right.x + 4,
-                                                             right.y + 8,
-                                                             4,
-                                                             8);
+  const sdk::CollisionResult right_paddle_col = sdk::ComputeCollision((ball.x >> 8) + 4,
+                                                                      (ball.y >> 8) + 4,
+                                                                      4,
+                                                                      right.x + 4,
+                                                                      right.y + 8,
+                                                                      4,
+                                                                      8);
   if (right_paddle_col.axis)
   {
     ball.post_collision_update(right_paddle_col);
@@ -85,13 +86,13 @@ void loop()
   // Bonus update
   // Must be before player controls update because bonus can affect player controls.
   bonus.update();
-  const CollisionResult bonus_col = compute_collision((ball.x >> 8) + 4,
-                                                      (ball.y >> 8) + 4,
-                                                      4,
-                                                      (bonus.center_x >> 8),
-                                                      (bonus.center_y >> 8) + 4,
-                                                      7,
-                                                      4);
+  const sdk::CollisionResult bonus_col = sdk::ComputeCollision((ball.x >> 8) + 4,
+                                                               (ball.y >> 8) + 4,
+                                                               4,
+                                                               (bonus.center_x >> 8),
+                                                               (bonus.center_y >> 8) + 4,
+                                                               7,
+                                                               4);
   if (bonus_col.axis && bonus.state == game::Bonus::State::ENABLED)
   {
     sound.play(hw::Buzzer::Note::C7, 50);
