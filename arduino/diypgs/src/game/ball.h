@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../hw/Pcd8544.h"
-#include "collision.h"
+#include "../sdk/Collision.h"
 
 uint8_t gfx_ball[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
 
@@ -163,51 +163,51 @@ public:
     return res;
   }
 
-  void post_collision_update(const CollisionResult res)
+  void post_collision_update(const sdk::CollisionResult res)
   {
     constexpr uint8_t NO_COLLISION_COUNT = 8;
 
     // Early out if no collision flag is raised or if there is no collision.
-    if (no_collision_counter > 0 || res.axis == CollisionResult::Axis::NONE)
+    if (no_collision_counter > 0 || res.axis == sdk::CollisionResult::Axis::NONE)
     {
       return;
     }
 
     switch (res.axis)
     {
-    case CollisionResult::Axis::X:
+    case sdk::CollisionResult::Axis::X:
       speed_id = res.dist < 0 ? x_reflect_id[-res.dist] : x_reflect_id[res.dist];
       speed_dir_y = -speed_dir_y;
       y = res.depth < 0 ? y + (uint8_t(-res.depth) << 8) : y - (uint8_t(res.depth) << 8);
       break;
 
-    case CollisionResult::Axis::Y:
+    case sdk::CollisionResult::Axis::Y:
       speed_id = res.dist < 0 ? y_reflect_id[-res.dist] : y_reflect_id[res.dist];
       speed_dir_x = -speed_dir_x;
       speed_dir_y = (res.dist == 0) ? 0 : ((res.dist > 0) ? 1 : -1);
       x = res.depth < 0 ? x + (uint8_t(-res.depth) << 8) : x - (uint8_t(res.depth) << 8);
       break;
 
-    case CollisionResult::Axis::X | CollisionResult::Axis::Y:
+    case sdk::CollisionResult::Axis::X | sdk::CollisionResult::Axis::Y:
       speed_id = 3;
       switch (res.corner)
       {
-      case CollisionResult::Corner::TOP_LEFT:
+      case sdk::CollisionResult::Corner::TOP_LEFT:
         speed_dir_x = -1;
         speed_dir_y = -1;
         break;
 
-      case CollisionResult::Corner::TOP_RIGHT:
+      case sdk::CollisionResult::Corner::TOP_RIGHT:
         speed_dir_x = +1;
         speed_dir_y = -1;
         break;
 
-      case CollisionResult::Corner::BOTTOM_LEFT:
+      case sdk::CollisionResult::Corner::BOTTOM_LEFT:
         speed_dir_x = -1;
         speed_dir_y = +1;
         break;
 
-      case CollisionResult::Corner::BOTTOM_RIGHT:
+      case sdk::CollisionResult::Corner::BOTTOM_RIGHT:
         speed_dir_x = +1;
         speed_dir_y = +1;
         break;
