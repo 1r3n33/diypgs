@@ -14,22 +14,32 @@ namespace game
     class World
     {
     public:
-        World(const hw::Pcd8544 &graphics, const hw::Buzzer &audio, const hw::Gamepad &controller);
+        // State is used to communicate back with the main loop.
+        // Each update() calls will return the next state of the current world.
+        enum class State : uint8_t
+        {
+            CONTINUE, // Keep calling update() on the current world.
+            NEXT,     // Current world is over, set the next world.
+        };
 
     public:
-        void setup();
-        void update();
+        World(const hw::Pcd8544 &graphics, const hw::Buzzer &audio, const hw::Gamepad &controller);
 
-    private:
+    protected:
+        virtual ~World();
+
+    public:
+        virtual void setup() = 0;
+        virtual State update() = 0;
+
+    public:
+        void setNextWorld(World *world);
+        World *getNextWorld() const;
+
+    protected:
         const hw::Pcd8544 &graphics;
         const hw::Buzzer &audio;
         const hw::Gamepad &controller;
-
-    private:
-        Ball ball;
-        Bonus bonus;
-        CircularBuffer ball_pos;
-        Paddle left;
-        Paddle right;
+        World *nextWorld;
     };
 }
