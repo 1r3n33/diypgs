@@ -31,7 +31,9 @@ namespace hw
 
         constexpr uint16_t BUFFER_SIZE = (6 * Pcd8544::SCREEN_WIDTH);
 
-        uint8_t buffer[BUFFER_SIZE] = {0};
+        uint8_t background[BUFFER_SIZE];
+
+        uint8_t buffer[BUFFER_SIZE];
 
         void draw_8x8(uint8_t x, uint8_t y, uint8_t *data)
         {
@@ -175,7 +177,9 @@ namespace hw
 
         digitalWrite(SS, HIGH); // Deactivate
 
+        clearBackground();
         clearBuffer();
+
         displayBuffer();
     }
 
@@ -196,11 +200,27 @@ namespace hw
         sprites[id] = sprite;
     }
 
+    void Pcd8544::clearBackground() const
+    {
+        for (uint16_t i = 0; i < BUFFER_SIZE; i++)
+        {
+            background[i] = 0;
+        }
+    }
+
+    void Pcd8544::setBackground(const uint8_t *background_) const
+    {
+        for (uint16_t i = 0; i < BUFFER_SIZE; i++)
+        {
+            background[i] = background_[i];
+        }
+    }
+
     void Pcd8544::clearBuffer() const
     {
         for (uint16_t i = 0; i < BUFFER_SIZE; i++)
         {
-            buffer[i] = 0;
+            buffer[i] = background[i];
         }
     }
 

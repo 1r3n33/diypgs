@@ -33,6 +33,10 @@ namespace hw
     public:
         static void set_sprite(const uint8_t id, const Sprite sprite);
 
+    public:
+        void clearBackground() const;
+        void setBackground(const uint8_t *background) const;
+
     private:
         void clearBuffer() const;
         void displayBuffer() const;
