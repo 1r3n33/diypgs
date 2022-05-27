@@ -17,15 +17,15 @@ namespace game
 
         constexpr int16_t HORIZONTAL_SPEED = 32;
         constexpr int16_t VERTICAL_SPEED = 32;
+
+        constexpr uint8_t GFX_BONUS_TOP_LEFT[8] = {0x00, 0x00, 0x10, 0x28, 0x48, 0x90, 0xA0, 0xC0};
+        constexpr uint8_t GFX_BONUS_TOP_RIGHT[8] = {0xC0, 0xA0, 0x90, 0x48, 0x28, 0x10, 0x00, 0x00};
+        constexpr uint8_t GFX_BONUS_BOTTOM_LEFT[8] = {0x00, 0x7E, 0xE7, 0xE7, 0xE7, 0xE7, 0xFF, 0x80};
+        constexpr uint8_t GFX_BONUS_BOTTOM_RIGHT[8] = {0x80, 0xFF, 0xE7, 0xE7, 0xE7, 0xE7, 0x7E, 0x00};
     }
 
     void Bonus::setup()
     {
-        static uint8_t gfx_bonus_top_left[8] = {0x00, 0x00, 0x10, 0x28, 0x48, 0x90, 0xA0, 0xC0};
-        static uint8_t gfx_bonus_top_right[8] = {0xC0, 0xA0, 0x90, 0x48, 0x28, 0x10, 0x00, 0x00};
-        static uint8_t gfx_bonus_bottom_left[8] = {0x00, 0x7E, 0xE7, 0xE7, 0xE7, 0xE7, 0xFF, 0x80};
-        static uint8_t gfx_bonus_bottom_right[8] = {0x80, 0xFF, 0xE7, 0xE7, 0xE7, 0xE7, 0x7E, 0x00};
-
         state = State::DISABLED;
         switch_state_counter = DISABLED_FRAME_COUNT;
 
@@ -41,10 +41,10 @@ namespace game
         sprite_ids[2] = 8;
         sprite_ids[3] = 9;
 
-        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t((center_x >> 8) - 8), uint8_t((center_y >> 8) - 8), 0, gfx_bonus_top_left};
-        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t(center_x >> 8), uint8_t((center_y >> 8) - 8), 0, gfx_bonus_top_right};
-        sprites[2] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t((center_x >> 8) - 8), uint8_t(center_y >> 8), 0, gfx_bonus_bottom_left};
-        sprites[3] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t(center_x >> 8), uint8_t(center_y >> 8), 0, gfx_bonus_bottom_right};
+        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t((center_x >> 8) - 8), uint8_t((center_y >> 8) - 8), 0, GFX_BONUS_TOP_LEFT};
+        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t(center_x >> 8), uint8_t((center_y >> 8) - 8), 0, GFX_BONUS_TOP_RIGHT};
+        sprites[2] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t((center_x >> 8) - 8), uint8_t(center_y >> 8), 0, GFX_BONUS_BOTTOM_LEFT};
+        sprites[3] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t(center_x >> 8), uint8_t(center_y >> 8), 0, GFX_BONUS_BOTTOM_RIGHT};
 
         hw::Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
         hw::Pcd8544::set_sprite(sprite_ids[1], sprites[1]);

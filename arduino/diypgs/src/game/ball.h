@@ -5,7 +5,7 @@
 
 namespace
 {
-  uint8_t gfx_ball[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
+  constexpr uint8_t GFX_BALL[8] = {0x3C, 0x7A, 0xFD, 0xFF, 0xFF, 0xFF, 0x7E, 0x3C};
 
   // Ball speeds
   // Computed by ./tools/vec2fixed16 5 40 30 0.05
@@ -21,10 +21,10 @@ namespace
   // -+----------------x [0]
   //  |
   //
-  int16_t speed_x[8] = {341, 315, 241, 131, 0, 0, 0, 0};
-  int16_t speed_y[8] = {0, 131, 241, 315, 341, 0, 0, 0};
-  int16_t speed_inc_x[8] = {17, 16, 12, 7, 0, 0, 0, 0};
-  int16_t speed_inc_y[8] = {0, 7, 12, 16, 17, 0, 0, 0};
+  constexpr int16_t speed_x[8] = {341, 315, 241, 131, 0, 0, 0, 0};
+  constexpr int16_t speed_y[8] = {0, 131, 241, 315, 341, 0, 0, 0};
+  constexpr int16_t speed_inc_x[8] = {17, 16, 12, 7, 0, 0, 0, 0};
+  constexpr int16_t speed_inc_y[8] = {0, 7, 12, 16, 17, 0, 0, 0};
 
   constexpr uint8_t MAX_SPEED_INC = 50;
 
@@ -56,8 +56,8 @@ namespace
   //   |  |
   //   x
   //
-  uint8_t x_reflect_id[8] = {3, 3, 2, 2, 7, 7, 7, 7};
-  uint8_t y_reflect_id[16] = {0, 1, 1, 2, 2, 2, 3, 3, 7, 7, 7, 7, 7, 7, 7, 7};
+  constexpr uint8_t x_reflect_id[8] = {3, 3, 2, 2, 7, 7, 7, 7};
+  constexpr uint8_t y_reflect_id[16] = {0, 1, 1, 2, 2, 2, 3, 3, 7, 7, 7, 7, 7, 7, 7, 7};
 
   // Score
   constexpr int16_t SCORE_LEFT_POS = -16 * 256;
@@ -114,7 +114,7 @@ public:
 
     no_collision_counter = 0;
 
-    sprite = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::XCLIP, uint8_t(x), uint8_t(y), 0xFF, gfx_ball};
+    sprite = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::XCLIP, uint8_t(x), uint8_t(y), 0xFF, GFX_BALL};
 
     sprite.x = x >> 8;
     sprite.y = y >> 8;

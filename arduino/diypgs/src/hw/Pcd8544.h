@@ -20,7 +20,7 @@ namespace hw
             uint8_t x;
             uint8_t y;
             uint8_t alpha;
-            uint8_t *data;
+            const uint8_t *data;
         };
 
     public:

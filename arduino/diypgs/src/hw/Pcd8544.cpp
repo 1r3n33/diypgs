@@ -35,7 +35,7 @@ namespace hw
 
         uint8_t buffer[BUFFER_SIZE];
 
-        void draw_8x8(uint8_t x, uint8_t y, uint8_t *data)
+        void draw_8x8(const uint8_t x, const uint8_t y, const uint8_t *data)
         {
             uint8_t mod0 = y % 8;
             uint8_t mod1 = 8 - mod0;
@@ -45,8 +45,8 @@ namespace hw
             uint8_t *buf0 = buffer + y0 + x;
             uint8_t *buf1 = buf0 + Pcd8544::SCREEN_WIDTH;
 
-            uint8_t *ptr0 = data;
-            uint8_t *ptr1 = ptr0;
+            const uint8_t *ptr0 = data;
+            const uint8_t *ptr1 = ptr0;
 
             *buf0++ |= (*ptr0++ << mod0);
             *buf0++ |= (*ptr0++ << mod0);
@@ -67,7 +67,7 @@ namespace hw
             *buf1++ |= (*ptr1++ >> mod1);
         }
 
-        void draw_8x8_alpha(uint8_t x, uint8_t y, uint8_t alpha, uint8_t *data)
+        void draw_8x8_alpha(const uint8_t x, const uint8_t y, const uint8_t alpha, const uint8_t *data)
         {
             uint8_t mod0 = y % 8;
             uint8_t mod1 = 8 - mod0;
@@ -77,8 +77,8 @@ namespace hw
             uint8_t *buf0 = buffer + y0 + x;
             uint8_t *buf1 = buf0 + Pcd8544::SCREEN_WIDTH;
 
-            uint8_t *ptr0 = data;
-            uint8_t *ptr1 = ptr0;
+            const uint8_t *ptr0 = data;
+            const uint8_t *ptr1 = ptr0;
 
             *buf0++ |= ((*ptr0++ << mod0) & BAYER_MATRIX[alpha][0]);
             *buf0++ |= ((*ptr0++ << mod0) & BAYER_MATRIX[alpha][1]);
@@ -99,7 +99,7 @@ namespace hw
             *buf1++ |= ((*ptr1++ >> mod1) & BAYER_MATRIX[alpha][7]);
         }
 
-        void draw_8x8_clip(int8_t x, int8_t y, uint8_t *data)
+        void draw_8x8_clip(const int8_t x, const int8_t y, const uint8_t *data)
         {
             int8_t left = max(0, x);
             int8_t right = min(Pcd8544::SCREEN_WIDTH, x + 8);
@@ -112,8 +112,8 @@ namespace hw
             uint8_t *buf0 = buffer + y0 + left;
             uint8_t *buf1 = buf0 + Pcd8544::SCREEN_WIDTH;
 
-            uint8_t *ptr0 = data + (left - x);
-            uint8_t *ptr1 = ptr0;
+            const uint8_t *ptr0 = data + (left - x);
+            const uint8_t *ptr1 = ptr0;
 
             for (int8_t i = left; i < right; i++)
             {

@@ -4,11 +4,11 @@
 
 namespace
 {
-    uint8_t gfx_paddle_left_top[8] = {0xF0, 0x0C, 0xF2, 0xFA, 0xFD, 0xFD, 0xFD, 0xFF};
-    uint8_t gfx_paddle_left_bottom[8] = {0x0F, 0x30, 0x4F, 0x5F, 0xBF, 0xBF, 0xBF, 0xFF};
+    constexpr uint8_t GFX_PADDLE_LEFT_TOP[8] = {0xF0, 0x0C, 0xF2, 0xFA, 0xFD, 0xFD, 0xFD, 0xFF};
+    constexpr uint8_t GFX_PADDLE_LEFT_BOTTOM[8] = {0x0F, 0x30, 0x4F, 0x5F, 0xBF, 0xBF, 0xBF, 0xFF};
 
-    uint8_t gfx_paddle_right_top[8] = {0xFF, 0xFD, 0xFD, 0xFD, 0xFA, 0xF2, 0x0C, 0xF0};
-    uint8_t gfx_paddle_right_bottom[8] = {0xFF, 0xBF, 0xBF, 0xBF, 0x5F, 0x4F, 0x30, 0x0F};
+    constexpr uint8_t GFX_PADDLE_RIGHT_TOP[8] = {0xFF, 0xFD, 0xFD, 0xFD, 0xFA, 0xF2, 0x0C, 0xF0};
+    constexpr uint8_t GFX_PADDLE_RIGHT_BOTTOM[8] = {0xFF, 0xBF, 0xBF, 0xBF, 0x5F, 0x4F, 0x30, 0x0F};
 }
 
 class Paddle
@@ -38,8 +38,8 @@ public:
         sprite_ids[0] = left ? 2 : 4;
         sprite_ids[1] = left ? 3 : 5;
 
-        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED, uint8_t(x), uint8_t(y), 0xFF, left ? gfx_paddle_left_top : gfx_paddle_right_top};
-        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED, uint8_t(x), uint8_t(y + 8), 0xFF, left ? gfx_paddle_left_bottom : gfx_paddle_right_bottom};
+        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED, uint8_t(x), uint8_t(y), 0xFF, left ? GFX_PADDLE_LEFT_TOP : GFX_PADDLE_RIGHT_TOP};
+        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED, uint8_t(x), uint8_t(y + 8), 0xFF, left ? GFX_PADDLE_LEFT_BOTTOM : GFX_PADDLE_RIGHT_BOTTOM};
 
         hw::Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
         hw::Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
