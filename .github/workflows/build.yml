@@ -9,6 +9,11 @@ env:
 jobs:
   compile:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fqbn:
+          - "arduino:avr:mega"
+          - "arduino:avr:nano"
 
     steps:
       - name: Checkout
@@ -17,7 +22,7 @@ jobs:
       - name: Compile
         uses: arduino/compile-sketches@v1
         with:
-          fqbn: arduino:avr:mega
+          fqbn: ${{ matrix.fqbn }}
           verbose: true
           enable-warnings-report: true
           enable-deltas-report: true
