@@ -1,7 +1,9 @@
 #pragma once
 
 #include "../hw/Pcd8544.h"
+
 #include "../sdk/Collision.h"
+#include "../sdk/Vector.h"
 
 namespace
 {
@@ -28,16 +30,16 @@ namespace
 
   constexpr uint8_t MAX_SPEED_INC = 50;
 
-  inline int16_t ComputeDx(const uint8_t id, const uint8_t inc, const int8_t d)
+  inline sdk::fixed16_t ComputeDx(const uint8_t id, const uint8_t inc, const int8_t d)
   {
     const int16_t s = speed_x[id] + (inc * speed_inc_x[id]);
-    return d >= 0 ? s : -s;
+    return sdk::fixed16_t::from(d >= 0 ? s : -s);
   }
 
-  inline int16_t ComputeDy(const uint8_t id, const uint8_t inc, const int8_t d)
+  inline sdk::fixed16_t ComputeDy(const uint8_t id, const uint8_t inc, const int8_t d)
   {
     const int16_t s = speed_y[id] + (inc * speed_inc_y[id]);
-    return d >= 0 ? s : -s;
+    return sdk::fixed16_t::from(d >= 0 ? s : -s);
   }
 
   // Reflect ids
@@ -60,12 +62,12 @@ namespace
   constexpr uint8_t y_reflect_id[16] = {0, 1, 1, 2, 2, 2, 3, 3, 7, 7, 7, 7, 7, 7, 7, 7};
 
   // Score
-  constexpr int16_t SCORE_LEFT_POS = -16 * 256;
-  constexpr int16_t SCORE_RIGHT_POS = ((hw::Pcd8544::SCREEN_WIDTH + 16) * 256);
+  constexpr sdk::fixed16_t SCORE_LEFT_POS = sdk::fixed16_t(-16);
+  constexpr sdk::fixed16_t SCORE_RIGHT_POS = sdk::fixed16_t((hw::Pcd8544::SCREEN_WIDTH + 16));
 
   // Collision
-  constexpr int16_t COLLISION_TOP_POS = 0;
-  constexpr int16_t COLLISION_BOTTOM_POS = ((hw::Pcd8544::SCREEN_HEIGHT - 8) << 8) | 0xFF;
+  constexpr sdk::fixed16_t COLLISION_TOP_POS = sdk::fixed16_t(0);
+  constexpr sdk::fixed16_t COLLISION_BOTTOM_POS = sdk::fixed16_t(((hw::Pcd8544::SCREEN_HEIGHT - 8) + 1));
 }
 
 class Ball
@@ -78,12 +80,10 @@ public:
     Collision = 0x02,
   };
 
-  int16_t x;
-  int16_t y;
+  sdk::Vec2f16 pos;
 
 private:
-  int16_t dx;
-  int16_t dy;
+  sdk::Vec2f16 dxdy;
 
   uint8_t speed_id;
   uint8_t speed_inc;
@@ -101,23 +101,21 @@ public:
 
   void setup()
   {
-    x = ((hw::Pcd8544::SCREEN_WIDTH - 8) / 2) << 8;
-    y = ((hw::Pcd8544::SCREEN_HEIGHT - 8) / 2) << 8;
+    pos.x = sdk::fixed16_t((hw::Pcd8544::SCREEN_WIDTH - 8) / 2);
+    pos.y = sdk::fixed16_t((hw::Pcd8544::SCREEN_HEIGHT - 8) / 2);
 
     // Go to the player (left)
     speed_id = 0;
     speed_inc = 1;
     speed_dir_x = -1;
     speed_dir_y = 0;
-    dx = ComputeDx(speed_id, speed_inc, speed_dir_x);
-    dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
+
+    dxdy.x = ComputeDx(speed_id, speed_inc, speed_dir_x);
+    dxdy.y = ComputeDy(speed_id, speed_inc, speed_dir_y);
 
     no_collision_counter = 0;
 
-    sprite = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::XCLIP, uint8_t(x), uint8_t(y), 0xFF, GFX_BALL};
-
-    sprite.x = x >> 8;
-    sprite.y = y >> 8;
+    sprite = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::XCLIP, pos.x.toInt8(), pos.y.toInt8(), 0xFF, GFX_BALL};
     hw::Pcd8544::set_sprite(0, sprite);
   }
 
@@ -125,34 +123,33 @@ public:
   {
     uint8_t res = Result::None;
 
-    x += dx;
-    y += dy;
+    pos.add(dxdy);
 
     // Check score
-    if (x < SCORE_LEFT_POS || x > SCORE_RIGHT_POS)
+    if (pos.x < SCORE_LEFT_POS || pos.x > SCORE_RIGHT_POS)
     {
       return Result::Score;
     }
 
     // Check collision
-    if (y < COLLISION_TOP_POS)
+    if (pos.y < COLLISION_TOP_POS)
     {
-      y = -y;
+      pos.y = -pos.y;
       speed_dir_y = -speed_dir_y;
-      dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
+      dxdy.y = ComputeDy(speed_id, speed_inc, speed_dir_y);
       res = Result::Collision;
     }
 
-    if (y > COLLISION_BOTTOM_POS)
+    if (pos.y > COLLISION_BOTTOM_POS)
     {
-      y = -y + (2 * COLLISION_BOTTOM_POS);
+      pos.y = -pos.y + (COLLISION_BOTTOM_POS * 2);
       speed_dir_y = -speed_dir_y;
-      dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
+      dxdy.y = ComputeDy(speed_id, speed_inc, speed_dir_y);
       res = Result::Collision;
     }
 
-    sprite.x = x >> 8;
-    sprite.y = y >> 8;
+    sprite.x = pos.x.toInt8();
+    sprite.y = pos.y.toInt8();
     hw::Pcd8544::set_sprite(0, sprite);
 
     if (no_collision_counter)
@@ -178,14 +175,14 @@ public:
     case sdk::CollisionResult::Axis::X:
       speed_id = res.dist < 0 ? x_reflect_id[-res.dist] : x_reflect_id[res.dist];
       speed_dir_y = -speed_dir_y;
-      y = res.depth < 0 ? y + (uint8_t(-res.depth) << 8) : y - (uint8_t(res.depth) << 8);
+      pos.y = res.depth < 0 ? pos.y + sdk::fixed16_t(-res.depth) : pos.y - sdk::fixed16_t(res.depth);
       break;
 
     case sdk::CollisionResult::Axis::Y:
       speed_id = res.dist < 0 ? y_reflect_id[-res.dist] : y_reflect_id[res.dist];
       speed_dir_x = -speed_dir_x;
       speed_dir_y = (res.dist == 0) ? 0 : ((res.dist > 0) ? 1 : -1);
-      x = res.depth < 0 ? x + (uint8_t(-res.depth) << 8) : x - (uint8_t(res.depth) << 8);
+      pos.x = res.depth < 0 ? pos.x + sdk::fixed16_t(-res.depth) : pos.x - sdk::fixed16_t(res.depth);
       break;
 
     case sdk::CollisionResult::Axis::X | sdk::CollisionResult::Axis::Y:
@@ -217,11 +214,11 @@ public:
 
     speed_inc = min(speed_inc + 1, MAX_SPEED_INC);
 
-    dx = ComputeDx(speed_id, speed_inc, speed_dir_x);
-    dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
+    dxdy.x = ComputeDx(speed_id, speed_inc, speed_dir_x);
+    dxdy.y = ComputeDy(speed_id, speed_inc, speed_dir_y);
 
-    sprite.x = x >> 8;
-    sprite.y = y >> 8;
+    sprite.x = pos.x.toInt8();
+    sprite.y = pos.y.toInt8();
     hw::Pcd8544::set_sprite(0, sprite);
 
     no_collision_counter = NO_COLLISION_COUNT;
@@ -230,7 +227,7 @@ public:
   void accelerate()
   {
     speed_inc = min(speed_inc + 10, MAX_SPEED_INC);
-    dx = ComputeDx(speed_id, speed_inc, speed_dir_x);
-    dy = ComputeDy(speed_id, speed_inc, speed_dir_y);
+    dxdy.x = ComputeDx(speed_id, speed_inc, speed_dir_x);
+    dxdy.y = ComputeDy(speed_id, speed_inc, speed_dir_y);
   }
 };

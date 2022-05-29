@@ -41,10 +41,10 @@ namespace game
         sprite_ids[2] = 8;
         sprite_ids[3] = 9;
 
-        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t((center_x >> 8) - 8), uint8_t((center_y >> 8) - 8), 0, GFX_BONUS_TOP_LEFT};
-        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t(center_x >> 8), uint8_t((center_y >> 8) - 8), 0, GFX_BONUS_TOP_RIGHT};
-        sprites[2] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t((center_x >> 8) - 8), uint8_t(center_y >> 8), 0, GFX_BONUS_BOTTOM_LEFT};
-        sprites[3] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, uint8_t(center_x >> 8), uint8_t(center_y >> 8), 0, GFX_BONUS_BOTTOM_RIGHT};
+        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, int8_t((center_x >> 8) - 8), int8_t((center_y >> 8) - 8), 0, GFX_BONUS_TOP_LEFT};
+        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, int8_t(center_x >> 8), int8_t((center_y >> 8) - 8), 0, GFX_BONUS_TOP_RIGHT};
+        sprites[2] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, int8_t((center_x >> 8) - 8), int8_t(center_y >> 8), 0, GFX_BONUS_BOTTOM_LEFT};
+        sprites[3] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, int8_t(center_x >> 8), int8_t(center_y >> 8), 0, GFX_BONUS_BOTTOM_RIGHT};
 
         hw::Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
         hw::Pcd8544::set_sprite(sprite_ids[1], sprites[1]);

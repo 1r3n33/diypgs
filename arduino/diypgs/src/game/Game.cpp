@@ -14,7 +14,7 @@ namespace game
     {
         ball.setup();
         bonus.setup();
-        ball_pos.setup((ball.y >> 8) + 4);
+        ball_pos.setup(ball.pos.y.toInt8() + 4);
         left.setup(1);
         right.setup(0);
     }
@@ -33,7 +33,7 @@ namespace game
             delay(500);
             ball.setup();
             bonus.setup();
-            ball_pos.setup((ball.y >> 8) + 4);
+            ball_pos.setup(ball.pos.y.toInt8() + 4);
             graphics.render();
             delay(500);
 
@@ -41,8 +41,8 @@ namespace game
         }
 
         // Paddle collision checks.
-        const sdk::CollisionResult left_paddle_col = sdk::ComputeCollision((ball.x >> 8) + 4,
-                                                                           (ball.y >> 8) + 4,
+        const sdk::CollisionResult left_paddle_col = sdk::ComputeCollision(ball.pos.x.toInt8() + 4,
+                                                                           ball.pos.y.toInt8() + 4,
                                                                            4,
                                                                            left.x + 4,
                                                                            left.y + 8,
@@ -54,8 +54,8 @@ namespace game
             audio.play(hw::Buzzer::Note::C6, 50);
         }
 
-        const sdk::CollisionResult right_paddle_col = sdk::ComputeCollision((ball.x >> 8) + 4,
-                                                                            (ball.y >> 8) + 4,
+        const sdk::CollisionResult right_paddle_col = sdk::ComputeCollision(ball.pos.x.toInt8() + 4,
+                                                                            ball.pos.y.toInt8() + 4,
                                                                             4,
                                                                             right.x + 4,
                                                                             right.y + 8,
@@ -70,8 +70,8 @@ namespace game
         // Bonus update
         // Must be before player controls update because bonus can affect player controls.
         bonus.update();
-        const sdk::CollisionResult bonus_col = sdk::ComputeCollision((ball.x >> 8) + 4,
-                                                                     (ball.y >> 8) + 4,
+        const sdk::CollisionResult bonus_col = sdk::ComputeCollision(ball.pos.x.toInt8() + 4,
+                                                                     ball.pos.y.toInt8() + 4,
                                                                      4,
                                                                      (bonus.center_x >> 8),
                                                                      (bonus.center_y >> 8) + 4,
@@ -106,7 +106,7 @@ namespace game
             left.move(+1);
 
         // The right paddle targets the ball y pos with 8 frames of lag.
-        ball_pos.push((ball.y >> 8) + 4);
+        ball_pos.push(ball.pos.y.toInt8() + 4);
         const uint8_t pos = ball_pos.pop(8);
         right.target(pos);
 

@@ -38,8 +38,8 @@ public:
         sprite_ids[0] = left ? 2 : 4;
         sprite_ids[1] = left ? 3 : 5;
 
-        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED, uint8_t(x), uint8_t(y), 0xFF, left ? GFX_PADDLE_LEFT_TOP : GFX_PADDLE_RIGHT_TOP};
-        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED, uint8_t(x), uint8_t(y + 8), 0xFF, left ? GFX_PADDLE_LEFT_BOTTOM : GFX_PADDLE_RIGHT_BOTTOM};
+        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED, x, y, 0xFF, left ? GFX_PADDLE_LEFT_TOP : GFX_PADDLE_RIGHT_TOP};
+        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED, x, int8_t(y + 8), 0xFF, left ? GFX_PADDLE_LEFT_BOTTOM : GFX_PADDLE_RIGHT_BOTTOM};
 
         hw::Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
         hw::Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
