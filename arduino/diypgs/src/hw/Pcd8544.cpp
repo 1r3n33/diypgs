@@ -128,7 +128,7 @@ namespace hw
 
         void draw_sprite(uint8_t i)
         {
-            Pcd8544::Sprite *sprite = sprites + i;
+            const Pcd8544::Sprite *sprite = sprites + i;
             switch (sprite->flags)
             {
             case Pcd8544::Sprite::Flag::ENABLED:

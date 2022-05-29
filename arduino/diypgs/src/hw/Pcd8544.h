@@ -17,8 +17,8 @@ namespace hw
             };
 
             uint8_t flags;
-            uint8_t x;
-            uint8_t y;
+            int8_t x;
+            int8_t y;
             uint8_t alpha;
             const uint8_t *data;
         };
