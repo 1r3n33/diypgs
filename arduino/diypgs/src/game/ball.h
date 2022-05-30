@@ -33,13 +33,13 @@ namespace
   inline sdk::fixed16_t ComputeDx(const uint8_t id, const uint8_t inc, const int8_t d)
   {
     const int16_t s = speed_x[id] + (inc * speed_inc_x[id]);
-    return sdk::fixed16_t::from(d >= 0 ? s : -s);
+    return sdk::fixed16_t(0, d >= 0 ? s : -s);
   }
 
   inline sdk::fixed16_t ComputeDy(const uint8_t id, const uint8_t inc, const int8_t d)
   {
     const int16_t s = speed_y[id] + (inc * speed_inc_y[id]);
-    return sdk::fixed16_t::from(d >= 0 ? s : -s);
+    return sdk::fixed16_t(0, d >= 0 ? s : -s);
   }
 
   // Reflect ids
@@ -123,7 +123,7 @@ public:
   {
     uint8_t res = Result::None;
 
-    pos.add(dxdy);
+    pos += dxdy;
 
     // Check score
     if (pos.x < SCORE_LEFT_POS || pos.x > SCORE_RIGHT_POS)
@@ -175,14 +175,14 @@ public:
     case sdk::CollisionResult::Axis::X:
       speed_id = res.dist < 0 ? x_reflect_id[-res.dist] : x_reflect_id[res.dist];
       speed_dir_y = -speed_dir_y;
-      pos.y = res.depth < 0 ? pos.y + sdk::fixed16_t(-res.depth) : pos.y - sdk::fixed16_t(res.depth);
+      pos.y -= sdk::fixed16_t(res.depth);
       break;
 
     case sdk::CollisionResult::Axis::Y:
       speed_id = res.dist < 0 ? y_reflect_id[-res.dist] : y_reflect_id[res.dist];
       speed_dir_x = -speed_dir_x;
       speed_dir_y = (res.dist == 0) ? 0 : ((res.dist > 0) ? 1 : -1);
-      pos.x = res.depth < 0 ? pos.x + sdk::fixed16_t(-res.depth) : pos.x - sdk::fixed16_t(res.depth);
+      pos.x -= sdk::fixed16_t(res.depth);
       break;
 
     case sdk::CollisionResult::Axis::X | sdk::CollisionResult::Axis::Y:

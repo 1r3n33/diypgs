@@ -2,6 +2,8 @@
 
 #include "../hw/Pcd8544.h"
 
+#include "../sdk/Vector.h"
+
 namespace game
 {
     class Bonus
@@ -23,15 +25,12 @@ namespace game
             COUNT,
         };
 
-        int16_t center_x;
-        int16_t center_y;
+        sdk::Vec2f16 center;
         uint8_t state;
 
     private:
-        int16_t origin_x;
-        int16_t origin_y;
-        int16_t dx;
-        int16_t dy;
+        sdk::Vec2f16 origin;
+        sdk::Vec2f16 dxdy;
 
         uint8_t switch_state_counter;
         uint8_t sprite_ids[4];
