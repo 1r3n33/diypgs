@@ -5,82 +5,89 @@ namespace sdk
     class fixed16_t
     {
     public:
-        fixed16_t()
+        inline fixed16_t()
         {
         }
 
-        explicit constexpr fixed16_t(const int integer) : i8f8(integer * 256)
+        constexpr explicit fixed16_t(const int integer, const int fractional = 0) : i8f8((integer * 256) | fractional)
         {
-        }
-
-        static inline fixed16_t from(const int16_t i8f8)
-        {
-            fixed16_t f16;
-            f16.i8f8 = i8f8;
-            return f16;
         }
 
     public:
-        constexpr int8_t toInt8() const
+        inline int8_t toInt8() const
         {
             return i8f8 / 256;
         }
 
-        fixed16_t operator+(const fixed16_t &other) const
+        inline fixed16_t operator+(const fixed16_t &other) const
         {
-            return from(i8f8 + other.i8f8);
+            return fixed16_t(0, i8f8 + other.i8f8);
         }
 
-        fixed16_t operator-(const fixed16_t &other) const
+        inline fixed16_t operator-(const fixed16_t &other) const
         {
-            return from(i8f8 - other.i8f8);
+            return fixed16_t(0, i8f8 - other.i8f8);
         }
 
-        void operator+=(const fixed16_t &other)
+        inline fixed16_t operator*(const int integer) const
+        {
+            return fixed16_t(0, i8f8 * integer);
+        }
+
+        inline void operator+=(const fixed16_t &other)
         {
             i8f8 += other.i8f8;
         }
 
-        fixed16_t operator*(const int integer) const
+        inline void operator-=(const fixed16_t &other)
         {
-            return from(i8f8 * integer);
+            i8f8 -= other.i8f8;
         }
 
-        void operator*=(const int integer)
+        inline void operator*=(const int integer)
         {
             i8f8 *= integer;
         }
 
-        constexpr bool operator<(const fixed16_t &other) const
+        inline fixed16_t operator-() const
+        {
+            return fixed16_t(0, -i8f8);
+        }
+
+        inline bool operator<(const fixed16_t &other) const
         {
             return i8f8 < other.i8f8;
         }
 
-        constexpr bool operator>(const fixed16_t &other) const
+        inline bool operator>(const fixed16_t &other) const
         {
             return i8f8 > other.i8f8;
         }
 
-        fixed16_t operator-() const
-        {
-            return from(-i8f8);
-        }
-
     private:
-        int16_t i8f8;
+        int16_t i8f8; // 8 bits for integer part; 8 bits for fractional part;
     };
 
     class Vec2f16
     {
     public:
-        Vec2f16()
+        inline Vec2f16()
         {
         }
 
-        void add(const Vec2f16 &other)
+        constexpr explicit Vec2f16(const fixed16_t x_, const fixed16_t y_) : x(x_), y(y_)
+        {
+        }
+
+        inline void operator+=(const Vec2f16 &other)
         {
             x += other.x;
             y += other.y;
+        }
+
+        inline Vec2f16 operator-(const Vec2f16 &other)
+        {
+            return Vec2f16(x - other.x, y - other.y);
         }
 
     public:

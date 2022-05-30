@@ -12,11 +12,11 @@ namespace game
         constexpr uint8_t WINDOW_MIN_Y = (hw::Pcd8544::SCREEN_HEIGHT / 2) - (hw::Pcd8544::SCREEN_HEIGHT / 4);
         constexpr uint8_t WINDOW_MAX_Y = (hw::Pcd8544::SCREEN_HEIGHT / 2) + (hw::Pcd8544::SCREEN_HEIGHT / 4);
 
-        constexpr int16_t HALF_HORIZONTAL_MOTION = 8 << 8;
-        constexpr int16_t HALF_VERTICAL_MOTION = 2 << 8;
+        constexpr sdk::fixed16_t HALF_HORIZONTAL_MOTION = sdk::fixed16_t(8);
+        constexpr sdk::fixed16_t HALF_VERTICAL_MOTION = sdk::fixed16_t(2);
 
-        constexpr int16_t HORIZONTAL_SPEED = 32;
-        constexpr int16_t VERTICAL_SPEED = 32;
+        constexpr sdk::fixed16_t HORIZONTAL_SPEED = sdk::fixed16_t(0, 32);
+        constexpr sdk::fixed16_t VERTICAL_SPEED = sdk::fixed16_t(0, 32);
 
         constexpr uint8_t GFX_BONUS_TOP_LEFT[8] = {0x00, 0x00, 0x10, 0x28, 0x48, 0x90, 0xA0, 0xC0};
         constexpr uint8_t GFX_BONUS_TOP_RIGHT[8] = {0xC0, 0xA0, 0x90, 0x48, 0x28, 0x10, 0x00, 0x00};
@@ -29,22 +29,23 @@ namespace game
         state = State::DISABLED;
         switch_state_counter = DISABLED_FRAME_COUNT;
 
-        origin_x = (hw::Pcd8544::SCREEN_WIDTH / 2) << 8;
-        origin_y = (hw::Pcd8544::SCREEN_HEIGHT / 2) << 8;
-        center_x = origin_x;
-        center_y = origin_y;
-        dx = HORIZONTAL_SPEED;
-        dy = VERTICAL_SPEED;
+        origin.x = sdk::fixed16_t(hw::Pcd8544::SCREEN_WIDTH / 2);
+        origin.y = sdk::fixed16_t(hw::Pcd8544::SCREEN_HEIGHT / 2);
+        center = origin;
+        dxdy.x = HORIZONTAL_SPEED;
+        dxdy.y = VERTICAL_SPEED;
 
         sprite_ids[0] = 6;
         sprite_ids[1] = 7;
         sprite_ids[2] = 8;
         sprite_ids[3] = 9;
 
-        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, int8_t((center_x >> 8) - 8), int8_t((center_y >> 8) - 8), 0, GFX_BONUS_TOP_LEFT};
-        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, int8_t(center_x >> 8), int8_t((center_y >> 8) - 8), 0, GFX_BONUS_TOP_RIGHT};
-        sprites[2] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, int8_t((center_x >> 8) - 8), int8_t(center_y >> 8), 0, GFX_BONUS_BOTTOM_LEFT};
-        sprites[3] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, int8_t(center_x >> 8), int8_t(center_y >> 8), 0, GFX_BONUS_BOTTOM_RIGHT};
+        const sdk::Vec2f16 corner = center - sdk::Vec2f16(sdk::fixed16_t(8), sdk::fixed16_t(8));
+
+        sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, corner.x.toInt8(), corner.y.toInt8(), 0, GFX_BONUS_TOP_LEFT};
+        sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, center.x.toInt8(), corner.y.toInt8(), 0, GFX_BONUS_TOP_RIGHT};
+        sprites[2] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, corner.x.toInt8(), center.y.toInt8(), 0, GFX_BONUS_BOTTOM_LEFT};
+        sprites[3] = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::ALPHA, center.x.toInt8(), center.y.toInt8(), 0, GFX_BONUS_BOTTOM_RIGHT};
 
         hw::Pcd8544::set_sprite(sprite_ids[0], sprites[0]);
         hw::Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
@@ -54,34 +55,36 @@ namespace game
 
     void Bonus::update()
     {
-        center_x += dx;
-        if (center_x > origin_x + HALF_HORIZONTAL_MOTION)
+        center += dxdy;
+
+        if (center.x > origin.x + HALF_HORIZONTAL_MOTION)
         {
-            dx = -dx;
+            dxdy.x = -dxdy.x;
         }
-        if (center_x < origin_x - HALF_HORIZONTAL_MOTION)
+        if (center.x < origin.x - HALF_HORIZONTAL_MOTION)
         {
-            dx = -dx;
+            dxdy.x = -dxdy.x;
         }
 
-        center_y += dy;
-        if (center_y > origin_y + HALF_VERTICAL_MOTION)
+        if (center.y > origin.y + HALF_VERTICAL_MOTION)
         {
-            dy = -dy;
+            dxdy.y = -dxdy.y;
         }
-        if (center_y < origin_y - HALF_VERTICAL_MOTION)
+        if (center.y < origin.y - HALF_VERTICAL_MOTION)
         {
-            dy = -dy;
+            dxdy.y = -dxdy.y;
         }
 
-        sprites[0].x = (center_x >> 8) - 8;
-        sprites[0].y = (center_y >> 8) - 8;
-        sprites[1].x = (center_x >> 8);
-        sprites[1].y = (center_y >> 8) - 8;
-        sprites[2].x = (center_x >> 8) - 8;
-        sprites[2].y = (center_y >> 8);
-        sprites[3].x = (center_x >> 8);
-        sprites[3].y = (center_y >> 8);
+        const sdk::Vec2f16 corner = center - sdk::Vec2f16(sdk::fixed16_t(8), sdk::fixed16_t(8));
+
+        sprites[0].x = corner.x.toInt8();
+        sprites[0].y = corner.y.toInt8();
+        sprites[1].x = center.x.toInt8();
+        sprites[1].y = corner.y.toInt8();
+        sprites[2].x = corner.x.toInt8();
+        sprites[2].y = center.y.toInt8();
+        sprites[3].x = center.x.toInt8();
+        sprites[3].y = center.y.toInt8();
 
         switch (state)
         {
@@ -99,10 +102,9 @@ namespace game
                     state = State::FADE_IN;
                     switch_state_counter = 16;
 
-                    origin_x = (WINDOW_MIN_X + (rand() % (WINDOW_MAX_X - WINDOW_MIN_X))) << 8;
-                    origin_y = (WINDOW_MIN_Y + (rand() % (WINDOW_MAX_Y - WINDOW_MIN_Y))) << 8;
-                    center_x = origin_x;
-                    center_y = origin_y;
+                    origin.x = sdk::fixed16_t(WINDOW_MIN_X + (rand() % (WINDOW_MAX_X - WINDOW_MIN_X)));
+                    origin.y = sdk::fixed16_t(WINDOW_MIN_Y + (rand() % (WINDOW_MAX_Y - WINDOW_MIN_Y)));
+                    center = origin;
                 }
             }
             break;

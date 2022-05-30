@@ -73,8 +73,8 @@ namespace game
         const sdk::CollisionResult bonus_col = sdk::ComputeCollision(ball.pos.x.toInt8() + 4,
                                                                      ball.pos.y.toInt8() + 4,
                                                                      4,
-                                                                     (bonus.center_x >> 8),
-                                                                     (bonus.center_y >> 8) + 4,
+                                                                     bonus.center.x.toInt8(),
+                                                                     bonus.center.y.toInt8() + 4,
                                                                      7,
                                                                      4);
         if (bonus_col.axis && bonus.state == game::Bonus::State::ENABLED)
