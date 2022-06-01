@@ -14,9 +14,27 @@ namespace game
         World::State update() override;
 
     private:
-        Ball ball;
+        // Update balls position. Compute balls collision.
+        // Return the number of active balls.
+        uint8_t updateBalls();
+
+        // Update bonus position. Check collision. Apply effect.
+        // Must happen before calls to update*Paddle functions.
+        void updateBonus();
+
+        // Read controller input to update left paddle.
+        void updateLeftPaddle();
+
+        // Make the right paddle follow the closest ball.
+        void updateRightPaddle();
+
+    private:
+        static constexpr uint8_t MAX_BALL_COUNT = 4;
+
+        Ball balls[MAX_BALL_COUNT];
+        CircularBuffer ballPositions[MAX_BALL_COUNT];
+
         Bonus bonus;
-        CircularBuffer ball_pos;
         Paddle left;
         Paddle right;
     };

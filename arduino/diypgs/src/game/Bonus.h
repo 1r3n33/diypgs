@@ -22,6 +22,7 @@ namespace game
             INVERT_COMMAND_LEFT,
             INVERT_COMMAND_RIGHT,
             ACCELERATE_BALL,
+            MULTI_BALL,
             COUNT,
         };
 
