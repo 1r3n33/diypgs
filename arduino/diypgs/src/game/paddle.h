@@ -35,8 +35,8 @@ public:
 
         inverted = 0;
 
-        sprite_ids[0] = left ? 2 : 4;
-        sprite_ids[1] = left ? 3 : 5;
+        sprite_ids[0] = left ? 4 : 5;
+        sprite_ids[1] = left ? 6 : 7;
 
         sprites[0] = {hw::Pcd8544::Sprite::Flag::ENABLED, x, y, 0xFF, left ? GFX_PADDLE_LEFT_TOP : GFX_PADDLE_RIGHT_TOP};
         sprites[1] = {hw::Pcd8544::Sprite::Flag::ENABLED, x, int8_t(y + 8), 0xFF, left ? GFX_PADDLE_LEFT_BOTTOM : GFX_PADDLE_RIGHT_BOTTOM};

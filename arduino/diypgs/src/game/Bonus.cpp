@@ -35,10 +35,10 @@ namespace game
         dxdy.x = HORIZONTAL_SPEED;
         dxdy.y = VERTICAL_SPEED;
 
-        sprite_ids[0] = 6;
-        sprite_ids[1] = 7;
-        sprite_ids[2] = 8;
-        sprite_ids[3] = 9;
+        sprite_ids[0] = 8;
+        sprite_ids[1] = 9;
+        sprite_ids[2] = 10;
+        sprite_ids[3] = 11;
 
         const sdk::Vec2f16 corner = center - sdk::Vec2f16(sdk::fixed16_t(8), sdk::fixed16_t(8));
 

@@ -61,28 +61,36 @@ namespace
   constexpr uint8_t x_reflect_id[8] = {3, 3, 2, 2, 7, 7, 7, 7};
   constexpr uint8_t y_reflect_id[16] = {0, 1, 1, 2, 2, 2, 3, 3, 7, 7, 7, 7, 7, 7, 7, 7};
 
-  // Score
-  constexpr sdk::fixed16_t SCORE_LEFT_POS = sdk::fixed16_t(-16);
-  constexpr sdk::fixed16_t SCORE_RIGHT_POS = sdk::fixed16_t((hw::Pcd8544::SCREEN_WIDTH + 16));
+  // Goal
+  constexpr sdk::fixed16_t GOAL_LEFT_POS = sdk::fixed16_t(-16);
+  constexpr sdk::fixed16_t GOAL_RIGHT_POS = sdk::fixed16_t((hw::Pcd8544::SCREEN_WIDTH + 16));
 
-  // Collision
-  constexpr sdk::fixed16_t COLLISION_TOP_POS = sdk::fixed16_t(0);
-  constexpr sdk::fixed16_t COLLISION_BOTTOM_POS = sdk::fixed16_t(((hw::Pcd8544::SCREEN_HEIGHT - 8) + 1));
+  // Bounce
+  constexpr sdk::fixed16_t BOUNCE_TOP_POS = sdk::fixed16_t(0);
+  constexpr sdk::fixed16_t BOUNCE_BOTTOM_POS = sdk::fixed16_t(((hw::Pcd8544::SCREEN_HEIGHT - 8) + 1));
 }
 
 class Ball
 {
 public:
+  enum Flag : uint8_t
+  {
+    ENABLED = 0x01
+  };
+
   enum Result : uint8_t
   {
     None = 0x0,
-    Score = 0x01,
-    Collision = 0x02,
+    Goal = 0x01,
+    Bounce = 0x02,
   };
 
+  uint8_t flags;
   sdk::Vec2f16 pos;
 
 private:
+  uint8_t spriteId;
+
   sdk::Vec2f16 dxdy;
 
   uint8_t speed_id;
@@ -99,58 +107,93 @@ public:
   {
   }
 
-  void setup()
+  void setup(const uint8_t id)
   {
-    pos.x = sdk::fixed16_t((hw::Pcd8544::SCREEN_WIDTH - 8) / 2);
-    pos.y = sdk::fixed16_t((hw::Pcd8544::SCREEN_HEIGHT - 8) / 2);
+    flags = 0;
 
-    // Go to the player (left)
+    pos.x = sdk::fixed16_t(0);
+    pos.y = sdk::fixed16_t(0);
+
     speed_id = 0;
-    speed_inc = 1;
-    speed_dir_x = -1;
+    speed_inc = 0;
+    speed_dir_x = 0;
     speed_dir_y = 0;
+
+    dxdy.x = sdk::fixed16_t(0);
+    dxdy.y = sdk::fixed16_t(0);
+
+    no_collision_counter = 0;
+
+    spriteId = id;
+    sprite = {hw::Pcd8544::Sprite::Flag::XCLIP, 0, 0, 0xFF, GFX_BALL};
+    hw::Pcd8544::set_sprite(spriteId, sprite);
+  }
+
+  void activate(const sdk::Vec2f16 &pos_)
+  {
+    flags |= Flag::ENABLED;
+
+    pos = pos_;
+
+    const int rnd = rand();
+
+    speed_id = rnd % 4;
+    speed_inc = 1;
+    speed_dir_x = rnd & 1 ? +1 : -1;
+    speed_dir_y = rnd & 1 ? -1 : +1;
 
     dxdy.x = ComputeDx(speed_id, speed_inc, speed_dir_x);
     dxdy.y = ComputeDy(speed_id, speed_inc, speed_dir_y);
 
     no_collision_counter = 0;
 
-    sprite = {hw::Pcd8544::Sprite::Flag::ENABLED | hw::Pcd8544::Sprite::Flag::XCLIP, pos.x.toInt8(), pos.y.toInt8(), 0xFF, GFX_BALL};
-    hw::Pcd8544::set_sprite(0, sprite);
+    sprite.flags |= hw::Pcd8544::Sprite::Flag::ENABLED;
+    sprite.x = pos.x.toInt8();
+    sprite.y = pos.y.toInt8();
+
+    hw::Pcd8544::set_sprite(spriteId, sprite);
   }
 
-  uint8_t update()
+  void deactivate()
+  {
+    flags &= ~Flag::ENABLED;
+    sprite.flags &= ~hw::Pcd8544::Sprite::Flag::ENABLED;
+
+    hw::Pcd8544::set_sprite(spriteId, sprite);
+  }
+
+  uint8_t preCollisionUpdate()
   {
     uint8_t res = Result::None;
 
     pos += dxdy;
 
     // Check score
-    if (pos.x < SCORE_LEFT_POS || pos.x > SCORE_RIGHT_POS)
+    if (pos.x < GOAL_LEFT_POS || pos.x > GOAL_RIGHT_POS)
     {
-      return Result::Score;
+      return Result::Goal;
     }
 
     // Check collision
-    if (pos.y < COLLISION_TOP_POS)
+    if (pos.y < BOUNCE_TOP_POS)
     {
       pos.y = -pos.y;
       speed_dir_y = -speed_dir_y;
       dxdy.y = ComputeDy(speed_id, speed_inc, speed_dir_y);
-      res = Result::Collision;
+      res = Result::Bounce;
     }
 
-    if (pos.y > COLLISION_BOTTOM_POS)
+    if (pos.y > BOUNCE_BOTTOM_POS)
     {
-      pos.y = -pos.y + (COLLISION_BOTTOM_POS * 2);
+      pos.y = -pos.y + (BOUNCE_BOTTOM_POS * 2);
       speed_dir_y = -speed_dir_y;
       dxdy.y = ComputeDy(speed_id, speed_inc, speed_dir_y);
-      res = Result::Collision;
+      res = Result::Bounce;
     }
 
     sprite.x = pos.x.toInt8();
     sprite.y = pos.y.toInt8();
-    hw::Pcd8544::set_sprite(0, sprite);
+    hw::Pcd8544::set_sprite(spriteId, sprite);
 
     if (no_collision_counter)
     {
@@ -160,7 +203,7 @@ public:
     return res;
   }
 
-  void post_collision_update(const sdk::CollisionResult res)
+  void postCollisionUpdate(const sdk::CollisionResult res)
   {
     constexpr uint8_t NO_COLLISION_COUNT = 8;
 
@@ -219,7 +262,7 @@ public:
 
     sprite.x = pos.x.toInt8();
     sprite.y = pos.y.toInt8();
-    hw::Pcd8544::set_sprite(0, sprite);
+    hw::Pcd8544::set_sprite(spriteId, sprite);
 
     no_collision_counter = NO_COLLISION_COUNT;
   }

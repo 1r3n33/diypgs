@@ -12,104 +12,193 @@ namespace game
 
     void Game::setup()
     {
-        ball.setup();
+        for (uint8_t i = 0; i < MAX_BALL_COUNT; i++)
+        {
+            balls[i].setup(i);
+        }
+        balls[0].activate(
+            sdk::Vec2f16(
+                sdk::fixed16_t((hw::Pcd8544::SCREEN_WIDTH / 2) - 4),
+                sdk::fixed16_t((hw::Pcd8544::SCREEN_HEIGHT / 2) - 4)));
+
+        for (uint8_t i = 0; i < MAX_BALL_COUNT; i++)
+        {
+            ballPositions[i].setup(balls[i].pos.y.toInt8() + 4);
+        }
+
         bonus.setup();
-        ball_pos.setup(ball.pos.y.toInt8() + 4);
+
         left.setup(1);
         right.setup(0);
     }
 
     World::State Game::update()
     {
-        // Update ball (includes wall collision checks).
-        const uint8_t collision = ball.update();
-        if (collision & Ball::Result::Collision)
-        {
-            audio.play(hw::Buzzer::Note::C5, 50);
-        }
-        if (collision & Ball::Result::Score)
+        const uint8_t activeBallCount = updateBalls();
+        if (activeBallCount == 0)
         {
             audio.play(hw::Buzzer::Note::C3, 200);
+
             delay(500);
-            ball.setup();
-            bonus.setup();
-            ball_pos.setup(ball.pos.y.toInt8() + 4);
+            setup();
             graphics.render();
             delay(500);
 
             return World::State::CONTINUE;
         }
 
-        // Paddle collision checks.
-        const sdk::CollisionResult left_paddle_col = sdk::ComputeCollision(ball.pos.x.toInt8() + 4,
-                                                                           ball.pos.y.toInt8() + 4,
-                                                                           4,
-                                                                           left.x + 4,
-                                                                           left.y + 8,
-                                                                           4,
-                                                                           8);
-        if (left_paddle_col.axis)
-        {
-            ball.post_collision_update(left_paddle_col);
-            audio.play(hw::Buzzer::Note::C6, 50);
-        }
+        updateBonus();
 
-        const sdk::CollisionResult right_paddle_col = sdk::ComputeCollision(ball.pos.x.toInt8() + 4,
-                                                                            ball.pos.y.toInt8() + 4,
-                                                                            4,
-                                                                            right.x + 4,
-                                                                            right.y + 8,
-                                                                            4,
-                                                                            8);
-        if (right_paddle_col.axis)
-        {
-            ball.post_collision_update(right_paddle_col);
-            audio.play(hw::Buzzer::Note::C6, 50);
-        }
+        updateLeftPaddle();
 
-        // Bonus update
-        // Must be before player controls update because bonus can affect player controls.
-        bonus.update();
-        const sdk::CollisionResult bonus_col = sdk::ComputeCollision(ball.pos.x.toInt8() + 4,
-                                                                     ball.pos.y.toInt8() + 4,
-                                                                     4,
-                                                                     bonus.center.x.toInt8(),
-                                                                     bonus.center.y.toInt8() + 4,
-                                                                     7,
-                                                                     4);
-        if (bonus_col.axis && bonus.state == game::Bonus::State::ENABLED)
-        {
-            audio.play(hw::Buzzer::Note::C7, 50);
+        updateRightPaddle();
 
-            const game::Bonus::Effect effect = bonus.capture();
-            switch (effect)
+        return World::State::CONTINUE;
+    }
+
+    uint8_t Game::updateBalls()
+    {
+        uint8_t activeBallCount = 0;
+
+        for (uint8_t i = 0; i < MAX_BALL_COUNT; i++)
+        {
+            if (balls[i].flags & Ball::Flag::ENABLED)
             {
-            case game::Bonus::Effect::INVERT_COMMAND_LEFT:
-                left.invert();
-                break;
-            case game::Bonus::Effect::INVERT_COMMAND_RIGHT:
-                right.invert();
-                break;
-            case game::Bonus::Effect::ACCELERATE_BALL:
-                ball.accelerate();
-                break;
-            default:
+                const uint8_t collision = balls[i].preCollisionUpdate();
+                if (collision & Ball::Result::Goal)
+                {
+                    balls[i].deactivate();
+                }
+                else
+                {
+                    activeBallCount++;
+                    if (collision & Ball::Result::Bounce)
+                    {
+                        audio.play(hw::Buzzer::Note::C5, 50);
+                    }
+
+                    // Paddle collision checks.
+                    const sdk::CollisionResult left_paddle_col = sdk::ComputeCollision(balls[i].pos.x.toInt8() + 4,
+                                                                                       balls[i].pos.y.toInt8() + 4,
+                                                                                       4,
+                                                                                       left.x + 4,
+                                                                                       left.y + 8,
+                                                                                       4,
+                                                                                       8);
+                    if (left_paddle_col.axis)
+                    {
+                        balls[i].postCollisionUpdate(left_paddle_col);
+                        audio.play(hw::Buzzer::Note::C6, 50);
+                    }
+
+                    const sdk::CollisionResult right_paddle_col = sdk::ComputeCollision(balls[i].pos.x.toInt8() + 4,
+                                                                                        balls[i].pos.y.toInt8() + 4,
+                                                                                        4,
+                                                                                        right.x + 4,
+                                                                                        right.y + 8,
+                                                                                        4,
+                                                                                        8);
+                    if (right_paddle_col.axis)
+                    {
+                        balls[i].postCollisionUpdate(right_paddle_col);
+                        audio.play(hw::Buzzer::Note::C6, 50);
+                    }
+                }
+            }
+
+            ballPositions[i].push(balls[i].pos.y.toInt8() + 4);
+        }
+
+        return activeBallCount;
+    }
+
+    void Game::updateBonus()
+    {
+        bonus.update();
+        for (uint8_t i = 0; i < MAX_BALL_COUNT; i++)
+        {
+            const sdk::CollisionResult bonus_col = sdk::ComputeCollision(balls[i].pos.x.toInt8() + 4,
+                                                                         balls[i].pos.y.toInt8() + 4,
+                                                                         4,
+                                                                         bonus.center.x.toInt8(),
+                                                                         bonus.center.y.toInt8() + 4,
+                                                                         7,
+                                                                         4);
+            if (bonus_col.axis && bonus.state == game::Bonus::State::ENABLED)
+            {
+                audio.play(hw::Buzzer::Note::C7, 50);
+
+                const game::Bonus::Effect effect = bonus.capture();
+                switch (effect)
+                {
+                case game::Bonus::Effect::INVERT_COMMAND_LEFT:
+                    left.invert();
+                    break;
+                case game::Bonus::Effect::INVERT_COMMAND_RIGHT:
+                    right.invert();
+                    break;
+                case game::Bonus::Effect::ACCELERATE_BALL:
+                    balls[i].accelerate();
+                    break;
+
+                case game::Bonus::Effect::MULTI_BALL:
+                    for (uint8_t j = 0; j < MAX_BALL_COUNT; j++)
+                    {
+                        if ((balls[j].flags & Ball::Flag::ENABLED) == 0)
+                        {
+                            balls[j].activate(balls[i].pos);
+                            break;
+                        }
+                    }
+                    break;
+
+                default:
+                    break;
+                }
+
                 break;
             }
         }
+    }
 
+    void Game::updateLeftPaddle()
+    {
         // Player controls the left paddle.
         const uint8_t button_pressed = controller.get();
+
         if (button_pressed & hw::Gamepad::Button::UP)
+        {
             left.move(-1);
+        }
+
         if (button_pressed & hw::Gamepad::Button::DOWN)
+        {
             left.move(+1);
+        }
+    }
 
-        // The right paddle targets the ball y pos with 8 frames of lag.
-        ball_pos.push(ball.pos.y.toInt8() + 4);
-        const uint8_t pos = ball_pos.pop(8);
-        right.target(pos);
+    void Game::updateRightPaddle()
+    {
+        // The right paddle targets the closest ball y pos with 8 frames of lag.
+        int8_t closestBallIndex = -1;
+        sdk::fixed16_t greatestX = sdk::fixed16_t(-128);
 
-        return World::State::CONTINUE;
+        for (uint8_t i = 0; i < MAX_BALL_COUNT; i++)
+        {
+            if (balls[i].flags & Ball::Flag::ENABLED)
+            {
+                if (balls[i].pos.x > greatestX)
+                {
+                    greatestX = balls[i].pos.x;
+                    closestBallIndex = i;
+                }
+            }
+        }
+
+        if (closestBallIndex >= 0)
+        {
+            const uint8_t pos = ballPositions[closestBallIndex].pop(8);
+            right.target(pos);
+        }
     }
 }
