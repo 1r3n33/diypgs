@@ -19,10 +19,12 @@ namespace game
 
         enum class Effect : uint8_t
         {
-            INVERT_COMMAND_LEFT,
-            INVERT_COMMAND_RIGHT,
-            ACCELERATE_BALL,
-            MULTI_BALL,
+            INVERT_COMMAND_LEFT,  // Current effect of UP and DOWN buttons is inverted. (Left player)
+            INVERT_COMMAND_RIGHT, // Current effect of UP and DOWN buttons is inverted. (Right player)
+            ACCELERATE_BALL,      // Accelerate the ball that captured the bonus.
+            MULTI_BALL,           // Spawn an additional ball. (Max. is Game::MAX_BALL_COUNT)
+            CHANGE_SIZE_LEFT,     // Change size of the left paddle.
+            CHANGE_SIZE_RIGHT,    // Change size of the right paddle.
             COUNT,
         };
 

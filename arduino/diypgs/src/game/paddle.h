@@ -18,6 +18,14 @@ public:
     int8_t y;
 
 private:
+    enum Size : uint8_t
+    {
+        SMALL = 0,
+        NORMAL = 1,
+        LARGE = 2,
+    };
+
+    uint8_t size;
     uint8_t inverted;
 
     uint8_t sprite_ids[2];
@@ -33,6 +41,7 @@ public:
         x = left ? 0 : (hw::Pcd8544::SCREEN_WIDTH - 8);
         y = (hw::Pcd8544::SCREEN_HEIGHT - 16) / 2;
 
+        size = Size::NORMAL;
         inverted = 0;
 
         sprite_ids[0] = left ? 4 : 5;
@@ -80,5 +89,27 @@ public:
     void invert()
     {
         inverted = !inverted;
+    }
+
+    // Decide the new size based on the paddle y pos.
+    void changeSize()
+    {
+        switch (size)
+        {
+        case Size::SMALL:
+            size = y & 1 ? Size::NORMAL : Size::LARGE;
+            break;
+
+        case Size::NORMAL:
+            size = y & 1 ? Size::SMALL : Size::LARGE;
+            break;
+
+        case Size::LARGE:
+            size = y & 1 ? Size::SMALL : Size::NORMAL;
+            break;
+
+        default:
+            break;
+        };
     }
 };
