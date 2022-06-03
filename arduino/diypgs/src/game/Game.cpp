@@ -137,6 +137,7 @@ namespace game
                 case game::Bonus::Effect::INVERT_COMMAND_RIGHT:
                     right.invert();
                     break;
+
                 case game::Bonus::Effect::ACCELERATE_BALL:
                     balls[i].accelerate();
                     break;
@@ -150,6 +151,14 @@ namespace game
                             break;
                         }
                     }
+                    break;
+
+                case game::Bonus::Effect::CHANGE_SIZE_LEFT:
+                    left.changeSize();
+                    break;
+
+                case game::Bonus::Effect::CHANGE_SIZE_RIGHT:
+                    right.changeSize();
                     break;
 
                 default:
