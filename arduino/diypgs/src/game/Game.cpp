@@ -28,8 +28,8 @@ namespace game
 
         bonus.setup();
 
-        left.setup(1);
-        right.setup(0);
+        left.setup(Paddle::Side::LEFT);
+        right.setup(Paddle::Side::RIGHT);
     }
 
     World::State Game::update()
@@ -78,26 +78,34 @@ namespace game
                     }
 
                     // Paddle collision checks.
+                    const uint8_t leftCenterX = left.getCenterX();
+                    const uint8_t leftCenterY = left.getCenterY();
+                    const uint8_t leftHalfWidth = left.getWidth() / 2;
+                    const uint8_t leftHalfHeight = left.getHeight() / 2;
                     const sdk::CollisionResult left_paddle_col = sdk::ComputeCollision(balls[i].pos.x.toInt8() + 4,
                                                                                        balls[i].pos.y.toInt8() + 4,
                                                                                        4,
-                                                                                       left.x + 4,
-                                                                                       left.y + 8,
-                                                                                       4,
-                                                                                       8);
+                                                                                       leftCenterX,
+                                                                                       leftCenterY,
+                                                                                       leftHalfWidth,
+                                                                                       leftHalfHeight);
                     if (left_paddle_col.axis)
                     {
                         balls[i].postCollisionUpdate(left_paddle_col);
                         audio.play(hw::Buzzer::Note::C6, 50);
                     }
 
+                    const uint8_t rightCenterX = right.getCenterX();
+                    const uint8_t rightCenterY = right.getCenterY();
+                    const uint8_t rightHalfWidth = right.getWidth() / 2;
+                    const uint8_t rightHalfHeight = right.getHeight() / 2;
                     const sdk::CollisionResult right_paddle_col = sdk::ComputeCollision(balls[i].pos.x.toInt8() + 4,
                                                                                         balls[i].pos.y.toInt8() + 4,
                                                                                         4,
-                                                                                        right.x + 4,
-                                                                                        right.y + 8,
-                                                                                        4,
-                                                                                        8);
+                                                                                        rightCenterX,
+                                                                                        rightCenterY,
+                                                                                        rightHalfWidth,
+                                                                                        rightHalfHeight);
                     if (right_paddle_col.axis)
                     {
                         balls[i].postCollisionUpdate(right_paddle_col);
