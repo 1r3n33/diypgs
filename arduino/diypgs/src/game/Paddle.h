@@ -6,6 +6,13 @@ namespace game
 {
     class Paddle
     {
+    public:
+        enum Side : uint8_t
+        {
+            LEFT = 0,
+            RIGHT = 1,
+        };
+
     private:
         enum Size : uint8_t
         {
@@ -15,7 +22,7 @@ namespace game
         };
 
     public:
-        void setup(const uint8_t left);
+        void setup(const Side side);
 
         void move(const int8_t dy);
 
@@ -25,11 +32,18 @@ namespace game
 
         void changeSize();
 
+        uint8_t getWidth() const;
+        uint8_t getHeight() const;
+
+        uint8_t getCenterX() const;
+        uint8_t getCenterY() const;
+
     public:
         int8_t x;
         int8_t y;
 
     private:
+        uint8_t side;
         uint8_t size;
         uint8_t inverted;
 
