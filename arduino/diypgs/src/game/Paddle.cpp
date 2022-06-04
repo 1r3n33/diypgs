@@ -1,42 +1,17 @@
-#pragma once
+#include "Paddle.h"
 
-#include "../hw/Pcd8544.h"
-
-namespace
+namespace game
 {
-    constexpr uint8_t GFX_PADDLE_LEFT_TOP[8] = {0xF0, 0x0C, 0xF2, 0xFA, 0xFD, 0xFD, 0xFD, 0xFF};
-    constexpr uint8_t GFX_PADDLE_LEFT_BOTTOM[8] = {0x0F, 0x30, 0x4F, 0x5F, 0xBF, 0xBF, 0xBF, 0xFF};
-
-    constexpr uint8_t GFX_PADDLE_RIGHT_TOP[8] = {0xFF, 0xFD, 0xFD, 0xFD, 0xFA, 0xF2, 0x0C, 0xF0};
-    constexpr uint8_t GFX_PADDLE_RIGHT_BOTTOM[8] = {0xFF, 0xBF, 0xBF, 0xBF, 0x5F, 0x4F, 0x30, 0x0F};
-}
-
-class Paddle
-{
-public:
-    int8_t x;
-    int8_t y;
-
-private:
-    enum Size : uint8_t
+    namespace
     {
-        SMALL = 0,
-        NORMAL = 1,
-        LARGE = 2,
-    };
+        constexpr uint8_t GFX_PADDLE_LEFT_TOP[8] = {0xF0, 0x0C, 0xF2, 0xFA, 0xFD, 0xFD, 0xFD, 0xFF};
+        constexpr uint8_t GFX_PADDLE_LEFT_BOTTOM[8] = {0x0F, 0x30, 0x4F, 0x5F, 0xBF, 0xBF, 0xBF, 0xFF};
 
-    uint8_t size;
-    uint8_t inverted;
-
-    uint8_t sprite_ids[2];
-    hw::Pcd8544::Sprite sprites[2];
-
-public:
-    Paddle()
-    {
+        constexpr uint8_t GFX_PADDLE_RIGHT_TOP[8] = {0xFF, 0xFD, 0xFD, 0xFD, 0xFA, 0xF2, 0x0C, 0xF0};
+        constexpr uint8_t GFX_PADDLE_RIGHT_BOTTOM[8] = {0xFF, 0xBF, 0xBF, 0xBF, 0x5F, 0x4F, 0x30, 0x0F};
     }
 
-    void setup(const uint8_t left)
+    void Paddle::setup(const uint8_t left)
     {
         x = left ? 0 : (hw::Pcd8544::SCREEN_WIDTH - 8);
         y = (hw::Pcd8544::SCREEN_HEIGHT - 16) / 2;
@@ -54,7 +29,7 @@ public:
         hw::Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
     }
 
-    void move(int8_t dy)
+    void Paddle::move(const int8_t dy)
     {
         y = inverted ? y - dy : y + dy;
         if (y < 0)
@@ -73,9 +48,9 @@ public:
         hw::Pcd8544::set_sprite(sprite_ids[1], sprites[1]);
     }
 
-    void target(uint8_t target)
+    void Paddle::target(const uint8_t target)
     {
-        uint8_t paddle_center = y + 8;
+        const uint8_t paddle_center = y + 8;
         if (paddle_center < target)
         {
             move(+1);
@@ -86,13 +61,13 @@ public:
         }
     }
 
-    void invert()
+    void Paddle::invert()
     {
         inverted = !inverted;
     }
 
     // Decide the new size based on the paddle y pos.
-    void changeSize()
+    void Paddle::changeSize()
     {
         switch (size)
         {
@@ -112,4 +87,4 @@ public:
             break;
         };
     }
-};
+}

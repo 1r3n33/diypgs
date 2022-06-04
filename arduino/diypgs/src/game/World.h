@@ -7,7 +7,7 @@
 #include "ball.h"
 #include "Bonus.h"
 #include "circular_buffer.h"
-#include "paddle.h"
+#include "Paddle.h"
 
 namespace game
 {
