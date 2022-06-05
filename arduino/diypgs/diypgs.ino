@@ -11,9 +11,9 @@ namespace
 {
   constexpr uint32_t USEC_PER_FRAME = 1000000 / 30; // 30 Hz
 
-  const hw::Pcd8544 graphics(10, 12);
-  const hw::Buzzer audio(8);
-  const hw::Gamepad controller(2, 3, 0xFF, 0xFF, 0xFF, 0xFF);
+  const hw::Pcd8544 graphics(5, 6, 12);
+  const hw::Buzzer audio(4);
+  const hw::Gamepad controller(10, 7, 8, 9, 3, 2);
 
   game::Titlescreen titlescreen(graphics, audio, controller);
   game::Game game_(graphics, audio, controller);

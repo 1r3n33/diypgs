@@ -146,8 +146,9 @@ namespace hw
         }
     }
 
-    Pcd8544::Pcd8544(const uint8_t dcPin, const uint8_t resetPin) : DC_PIN(dcPin),
-                                                                    RESET_PIN(resetPin)
+    Pcd8544::Pcd8544(const uint8_t dcPin, const uint8_t resetPin, const uint8_t ssPin) : DC_PIN(dcPin),
+                                                                                         RESET_PIN(resetPin),
+                                                                                         SS_PIN(ssPin)
     {
     }
 
@@ -156,12 +157,13 @@ namespace hw
         pinMode(DC_PIN, OUTPUT);
         pinMode(RESET_PIN, OUTPUT);
 
-        SPI.begin(); // set SCK, MOSI, and SS to outputs, pulling SCK and MOSI low, and SS high
+        SPI.begin(); // Initializes the SPI bus by setting SCK, MOSI, and SS (not SS_PIN) to outputs, pulling SCK and MOSI low, and SS (not SS_PIN) high.
+        pinMode(SS_PIN, OUTPUT);
 
         digitalWrite(RESET_PIN, LOW);
         digitalWrite(RESET_PIN, HIGH);
 
-        digitalWrite(SS, LOW); // Activate
+        digitalWrite(SS_PIN, LOW); // Activate
 
         digitalWrite(DC_PIN, LOW); // DC pin is low for commands
         SPI.beginTransaction(SPI_SETTINGS);
@@ -175,7 +177,7 @@ namespace hw
         SPI.transfer(0x80); // set x to 0
         SPI.endTransaction();
 
-        digitalWrite(SS, HIGH); // Deactivate
+        digitalWrite(SS_PIN, HIGH); // Deactivate
 
         clearBackground();
         clearBuffer();
@@ -226,7 +228,7 @@ namespace hw
 
     void Pcd8544::displayBuffer() const
     {
-        digitalWrite(SS, LOW); // Activate
+        digitalWrite(SS_PIN, LOW); // Activate
         SPI.beginTransaction(SPI_SETTINGS);
 
         // Draw buffer
@@ -234,6 +236,6 @@ namespace hw
         SPI.transfer(buffer, BUFFER_SIZE);
 
         SPI.endTransaction();
-        digitalWrite(SS, HIGH); // Deactivate
+        digitalWrite(SS_PIN, HIGH); // Deactivate
     }
 }

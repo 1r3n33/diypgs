@@ -24,7 +24,7 @@ namespace hw
         };
 
     public:
-        Pcd8544(const uint8_t dcPin, const uint8_t resetPin);
+        Pcd8544(const uint8_t dcPin, const uint8_t resetPin, const uint8_t ssPin);
 
     public:
         void setup() const;
@@ -49,5 +49,6 @@ namespace hw
     private:
         const uint8_t DC_PIN;
         const uint8_t RESET_PIN;
+        const uint8_t SS_PIN;
     };
 }

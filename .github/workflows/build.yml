@@ -14,6 +14,7 @@ jobs:
         fqbn:
           - "arduino:avr:mega"
           - "arduino:avr:nano"
+          - "arduino:megaavr:nona4809"
 
     steps:
       - name: Checkout
