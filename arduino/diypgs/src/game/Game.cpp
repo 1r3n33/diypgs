@@ -140,10 +140,10 @@ namespace game
                 switch (effect)
                 {
                 case game::Bonus::Effect::INVERT_COMMAND_LEFT:
-                    left.invert();
+                    left.invertDirection();
                     break;
                 case game::Bonus::Effect::INVERT_COMMAND_RIGHT:
-                    right.invert();
+                    right.invertDirection();
                     break;
 
                 case game::Bonus::Effect::ACCELERATE_BALL:
@@ -180,6 +180,8 @@ namespace game
 
     void Game::updateLeftPaddle()
     {
+        left.update();
+
         // Player controls the left paddle.
         const uint8_t button_pressed = controller.get();
 
@@ -196,6 +198,8 @@ namespace game
 
     void Game::updateRightPaddle()
     {
+        right.update();
+
         // The right paddle targets the closest ball y pos with 8 frames of lag.
         int8_t closestBallIndex = -1;
         sdk::fixed16_t greatestX = sdk::fixed16_t(-128);

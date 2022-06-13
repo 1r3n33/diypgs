@@ -21,15 +21,23 @@ namespace game
             LARGE = 2,
         };
 
+        enum Transition : uint8_t
+        {
+            NONE = 0,
+            INVERT_DIRECTION = 1,
+            CHANGE_SIZE = 2
+        };
+
     public:
         void setup(const Side side);
+
+        void update();
 
         void move(const int8_t dy);
 
         void target(const uint8_t target);
 
-        void invert();
-
+        void invertDirection();
         void changeSize();
 
         uint8_t getWidth() const;
@@ -37,6 +45,10 @@ namespace game
 
         uint8_t getCenterX() const;
         uint8_t getCenterY() const;
+
+    private:
+        void applyInvertDirection();
+        void applyChangeSize();
 
     public:
         int8_t x;
@@ -46,6 +58,9 @@ namespace game
         uint8_t side;
         uint8_t size;
         uint8_t inverted;
+
+        uint8_t transition;
+        uint8_t transitionFrameCounter;
 
         uint8_t sprite_ids[2];
         hw::Pcd8544::Sprite sprites[2];
