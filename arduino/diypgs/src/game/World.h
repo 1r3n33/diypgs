@@ -4,11 +4,6 @@
 #include "../hw/Gamepad.h"
 #include "../hw/Pcd8544.h"
 
-#include "ball.h"
-#include "Bonus.h"
-#include "circular_buffer.h"
-#include "Paddle.h"
-
 namespace game
 {
     class World

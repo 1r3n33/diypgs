@@ -1,6 +1,11 @@
 #pragma once
 
+#include "../sdk/CircularBuffer.h"
+
 #include "World.h"
+#include "ball.h"
+#include "Bonus.h"
+#include "Paddle.h"
 
 namespace game
 {
@@ -32,7 +37,7 @@ namespace game
         static constexpr uint8_t MAX_BALL_COUNT = 4;
 
         Ball balls[MAX_BALL_COUNT];
-        CircularBuffer ballPositions[MAX_BALL_COUNT];
+        sdk::CircularBuffer ballPositions[MAX_BALL_COUNT];
 
         Bonus bonus;
         Paddle left;
