@@ -19,7 +19,7 @@ Toner acts as a mask when chemically removing the copper:
 
 ## Etching
 
-Bath the PCB in ferric chloride and gently agitate the solution in a well ventilated area (45 min.):
+Bath the PCB in ferric chloride and gently agitate the solution in a well-ventilated area (45 min.):
 ![EtchingFerricChlorideBath](./images/etching_ferric_chloride_bath.jpg)
 
 Wash many times in water:
@@ -27,8 +27,29 @@ Wash many times in water:
 
 ## Cleaning
 
-Remove toner with acetone in a well ventilated area:
+Remove toner with acetone in a well-ventilated area:
 ![TonerRemovalAcetoneCleaning](./images/toner_removal_acetone_cleaning.jpg)
 
 Ready to be tested:
 ![PcbEndResult](./images/pcb_end_result.jpg)
+
+## Testing
+
+Checking and fixing short circuits:
+![TestingShortCircuit](./images/testing_short_circuit.jpg)
+
+## Mounting & soldering
+
+Getting ready to mount the board:
+![MountingSetup](./images/mounting_setup.jpg)
+
+Main components soldered:
+![MountingSoldered](./images/mounting_soldered.jpg)
+
+Booting up:
+![MountingPower](./images/mounting_power.jpg)
+
+
+## Playing
+
+![RunningOnBattery](./images/running_on_battery.jpg)
